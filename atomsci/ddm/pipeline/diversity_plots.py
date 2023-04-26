@@ -84,7 +84,7 @@ def plot_dataset_dist_distr(dataset, feat_type, dist_metric, task_name, **metric
 
 #------------------------------------------------------------------------------------------------------------------
 def plot_tani_dist_distr(df, smiles_col, df_name, radius=2, subset_col='subset', subsets=False, 
-                         ref_subset='train', plot_width=6, ndist_max=None, **metric_kwargs):
+                         ref_subset='train', plot_width=6, ndist_max=None, ax=None, **metric_kwargs):
     """
     Generate a density plot showing the distribution of nearest neighbor distances between 
     ecfp feature vectors, using the Tanimoto metric. Optionally split by subset.
@@ -106,9 +106,11 @@ def plot_tani_dist_distr(df, smiles_col, df_name, radius=2, subset_col='subset',
 
         ref_subset (str): Reference subset for nearest-neighbor distances, if `subsets` is True.
 
-        plot_width (float): Plot width in inches.
+        plot_width (float): Plot width in inches. Ignored if ax is not None.
 
         ndist_max (int): Not used, included only for backward compatibility.
+        
+        ax (MatPlotLib axis): allow passage of an axis instead of creating a new figure.
 
         metric_kwargs: Additional arguments to pass to metric. Not used, included only for backward compatibility.
 
@@ -154,15 +156,19 @@ def plot_tani_dist_distr(df, smiles_col, df_name, radius=2, subset_col='subset',
             diststmp = pd.DataFrame(zip(diststmp,substmp), columns=['dist','subset'])
             dists=pd.concat([dists,diststmp])
     dists=dists.reset_index(drop=True)
-    fig, ax = plt.subplots(figsize=(plot_width, plot_width))
-    sns.kdeplot(data=dists[dists.subset!=ref_subset], x='dist', hue='subset', legend=True, common_norm=False, common_grid=True, fill=False, ax=ax)
-    ax.set_xlabel('%s distance' % dist_metric)
-    ax.set_ylabel('Density')
-    if not subsets:
-        ax.set_title("%s dataset\nDistribution of %s nearest neighbor distances between %s feature vectors" % (
-                      df_name, dist_metric, feat_type))
-    else: 
-        ax.set_title(f"{df_name} dataset: Distribution of {dist_metric} distances\nbetween {feat_type} feature vectors from non-{ref_subset} subsets\nto their nearest neighbors in the {ref_subset} subset")
+    
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(plot_width, plot_width))
+        sns.kdeplot(data=dists[dists.subset!=ref_subset], x='dist', hue='subset', legend=True, common_norm=False, common_grid=True, fill=False, ax=ax)
+        ax.set_xlabel('%s distance' % dist_metric)
+        ax.set_ylabel('Density')
+        if not subsets:
+            ax.set_title("%s dataset\nDistribution of %s nearest neighbor distances between %s feature vectors" % (
+                          df_name, dist_metric, feat_type))
+        else: 
+            ax.set_title(f"{df_name} dataset: Distribution of {dist_metric} distances\nbetween {feat_type} feature vectors from non-{ref_subset} subsets\nto their nearest neighbors in the {ref_subset} subset")
+    else:
+        sns.kdeplot(data=dists[dists.subset!=ref_subset], x='dist', hue='subset', legend=True, common_norm=False, common_grid=True, fill=False, ax=ax)
 
     return dists
 
