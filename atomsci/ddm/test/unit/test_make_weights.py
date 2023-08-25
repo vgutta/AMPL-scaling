@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import atomsci.ddm.pipeline.featurization as feat
+import pytest
 
 correct_v = np.array([[np.nan, 4.5622, np.nan, np.nan],
             [np.nan, np.nan, 5.0905, np.nan],
@@ -15,6 +16,7 @@ correct_w = np.array([[0.,1.,0.,0.],
             [1., 0., 0., 0.],
             [1., 0., 0., 0.]], dtype=float)
 
+@pytest.mark.basic
 def test_nan_make_weights():
     temp_vals = np.array([[np.nan, 4.5622, np.nan, np.nan],
        [np.nan, np.nan, 5.0905, np.nan],
@@ -28,6 +30,7 @@ def test_nan_make_weights():
     assert np.array_equal(v, correct_v, equal_nan=True)
     assert np.max(np.abs(w-correct_w)) < 1e-5
 
+@pytest.mark.basic
 def test_str_make_weights():
     temp_vals = np.array([['', 4.5622, '', ''],
                 ['', '', 5.0905, ''],

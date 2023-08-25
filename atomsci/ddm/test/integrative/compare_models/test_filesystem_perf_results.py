@@ -8,6 +8,7 @@ import tarfile
 import json
 import glob
 import pandas as pd
+import pytest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../delaney_Panel'))
 from test_delaney_panel import init, train_and_predict
@@ -17,25 +18,25 @@ from test_retrain_dc_models import H1_curate
 from atomsci.ddm.utils import llnl_utils
 
 def clean():
-    delaney_files = glob.glob('delaney-processed*.csv')
+    delaney_files = glob.glob(os.getcwd(), 'delaney-processed*.csv')
     for df in delaney_files:
         if os.path.exists(df):
             os.remove(df)
 
-    h1_files = glob.glob('H1_*.csv')
+    h1_files = glob.glob('os.getcwd(), H1_*.csv')
     for hf in h1_files:
         if os.path.exists(hf):
             os.remove(hf)
 
-    if os.path.exists('result'):
-        shutil.rmtree('result')
+    if os.path.exists(os.path.abspath('result')):
+        shutil.rmtree(os.path.abspath('result'))
 
-    if os.path.exists('scaled_descriptors'):
-        shutil.rmtree('scaled_descriptors')
+    if os.path.exists(os.path.abspath('scaled_descriptors')):
+        shutil.rmtree(os.path.abspath('scaled_descriptors'))
 
 def get_tar_metadata(model_tarball):
-    tarf_content = tarfile.open(model_tarball, "r")
-    metadata_file = tarf_content.getmember("./model_metadata.json")
+    tarf_content = tarfile.open(os.path.abspath(model_tarball), "r")
+    metadata_file = tarf_content.getmember(os.path.abspath("./model_metadata.json"))
     ext_metadata = tarf_content.extractfile(metadata_file)
 
     meta_json = json.load(ext_metadata)
@@ -54,7 +55,7 @@ def confirm_perf_table(json_f, df):
     # the one row
     row = df.iloc[0]
 
-    with open(json_f) as f:
+    with open(os.path.abspath(json_f)) as f:
         config = json.load(f)
 
     model_type = config['model_type']
@@ -122,10 +123,11 @@ def all_similar_tests(json_f, prefix='delaney-processed'):
 
     return df1, df2, model_info
 
+@pytest.mark.basic
 def test_RF_results():
     clean()
     init()
-    json_f = 'jsons/reg_config_delaney_fit_RF_mordred_filtered.json'
+    json_f = os.path.abspath('jsons/reg_config_delaney_fit_RF_mordred_filtered.json')
 
     df1, df2, model_info = all_similar_tests(json_f)
 
@@ -147,10 +149,11 @@ def test_RF_results():
 
     clean()
 
+@pytest.mark.basic
 def test_NN_results():
     clean()
     init()
-    json_f = 'jsons/reg_config_delaney_fit_NN_graphconv.json'
+    json_f = os.path.abspath('jsons/reg_config_delaney_fit_NN_graphconv.json')
 
     df1, df2, model_info = all_similar_tests(json_f)
 
@@ -166,10 +169,11 @@ def test_NN_results():
 
     clean()
 
+@pytest.mark.basic
 def test_XGB_results():
     clean()
     init()
-    json_f = 'jsons/reg_config_delaney_fit_XGB_mordred_filtered.json'
+    json_f = os.path.abspath('jsons/reg_config_delaney_fit_XGB_mordred_filtered.json')
 
     df1, df2, model_info = all_similar_tests(json_f)
 
@@ -180,10 +184,15 @@ def test_XGB_results():
 
     clean()
 
+@pytest.mark.basic
 def test_AttentiveFP_results():
+    if not llnl_utils.is_lc_system():
+        assert True
+        return
+
     clean()
     H1_curate()
-    json_f = 'jsons/reg_config_H1_fit_AttentiveFPModel.json'
+    json_f = os.path.abspath('jsons/reg_config_H1_fit_AttentiveFPModel.json')
 
     df1, df2, model_info = all_similar_tests(json_f, 'H1')
 
@@ -202,10 +211,11 @@ def test_AttentiveFP_results():
 
     clean()
 
+@pytest.mark.basic
 def test_GCN_results():
     clean()
     H1_curate()
-    json_f = 'jsons/reg_config_H1_fit_GCNModel.json'
+    json_f = os.path.abspath('jsons/reg_config_H1_fit_GCNModel.json')
 
     df1, df2, model_info = all_similar_tests(json_f, 'H1')
 
@@ -225,10 +235,11 @@ def test_GCN_results():
 
     clean()
 
+@pytest.mark.basic
 def test_GraphConvModel_results():
     clean()
     H1_curate()
-    json_f = 'jsons/reg_config_H1_fit_GraphConvModel.json'
+    json_f =  os.path.abspath('jsons/reg_config_H1_fit_GraphConvModel.json')
 
     df1, df2, model_info = all_similar_tests(json_f, 'H1')
 
@@ -248,7 +259,9 @@ def test_GraphConvModel_results():
     assert model_info['feat_parameters_dict'] == json.dumps({})
 
     clean()
-
+    
+@pytest.mark.gpu_required
+@pytest.mark.excluded_outside_llnl
 def test_MPNN_results():
     if not llnl_utils.is_lc_system():
         assert True
@@ -256,7 +269,7 @@ def test_MPNN_results():
 
     clean()
     H1_curate()
-    json_f = 'jsons/reg_config_H1_fit_MPNNModel.json'
+    json_f = os.path.abspath('jsons/reg_config_H1_fit_MPNNModel.json')
 
     df1, df2, model_info = all_similar_tests(json_f, 'H1')
 
@@ -276,10 +289,11 @@ def test_MPNN_results():
 
     clean()
 
+@pytest.mark.basic
 def test_PytorchMPNN_results():
     clean()
     H1_curate()
-    json_f = 'jsons/reg_config_H1_fit_PytorchMPNNModel.json'
+    json_f = os.path.abspath('jsons/reg_config_H1_fit_PytorchMPNNModel.json')
 
     df1, df2, model_info = all_similar_tests(json_f, 'H1')
 

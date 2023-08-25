@@ -6,7 +6,9 @@ import atomsci.ddm.utils.file_utils as futils
 import shutil
 from os import path
 from tempfile import TemporaryDirectory
+import pytest 
 
+@pytest.mark.basic
 def test_extractall_tarfile():
   tar_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 
       '../../examples/BSEP/models/bsep_classif_scaffold_split.tar.gz')

@@ -134,7 +134,7 @@ def test_model_metadata_input_as_dict():
     test.append(params.layer_sizes == [1000,500]
     test.append(params.result_dir == '/usr/local/data/delaney_refactored2'
 '''
-
+@pytest.mark.basic
 def test_default_params_json():
     params = parse.wrapper(currentdir + '/config_required_inputs.json')
     defaults = default_parameters()
@@ -144,11 +144,13 @@ def test_default_params_json():
     test.append(params.transformers)
     assert all(test)
     
+@pytest.mark.basic
 def test_dupe_params_json(caplog):
     params = parse.wrapper(currentdir + '/config_dupe_inputs.json')
     for record in caplog.records:
         assert record.levelname == 'WARNING'
     
+@pytest.mark.basic
 def test_incorrect_params_json(caplog):
 
    # with pytest.raises(ValueError):
@@ -158,6 +160,7 @@ def test_incorrect_params_json(caplog):
         assert record.levelname == 'WARNING'
         
 
+@pytest.mark.basic
 def test_correct_input_mixed_command_line_types():
     params = parse.wrapper(config_inputs)
     test = []
@@ -174,6 +177,7 @@ def test_correct_input_mixed_command_line_types():
     test.append(not params.transformers)
     assert all(test)
     
+@pytest.mark.basic
 def test_correct_input_type_json():
     params = parse.wrapper(currentdir + '/config_list_inputs.json')
     test = []
@@ -198,12 +202,14 @@ def test_params_exist():
         raise AssertionError
 """
 
+@pytest.mark.basic
 def test_default_params_command():
     params = parse.wrapper(required_inputs)
     defaults = default_parameters()
     assert params == defaults
     
 
+@pytest.mark.basic
 def test_default_params_command_with_dataset_hash():
     params = parse.wrapper(currentdir + '/../test_datasets/H1_hybrid.json')
     # a valid dataset hash should be generated after the parse.wrapper call
@@ -217,16 +223,19 @@ def test_required_vals_command():
 """
 
 
+@pytest.mark.basic
 def test_undefined_param_command():
     with pytest.raises(SystemExit):
         params = parse.wrapper(undefined_inputs)
         
+@pytest.mark.basic
 def test_dupe_param_command():
     with pytest.raises(ValueError):
         params = parse.wrapper(dupe_inputs)
 
 
         
+@pytest.mark.basic
 def test_correct_input_type_command():
 
     params = parse.wrapper(list_inputs)
@@ -254,6 +263,7 @@ def test_correct_input_type_command():
     test.append(params.learning_rate == 1)
     assert all(test)
 
+@pytest.mark.basic
 def test_default_params_namespace():
     params = parse.wrapper(required_inputs_namespace)
     defaults = default_parameters()
@@ -261,13 +271,14 @@ def test_default_params_namespace():
     params = parse.wrapper(required_inputs_dict)
     assert params == defaults
         
+@pytest.mark.basic
 def test_required_vals_namespace(caplog):
     with pytest.raises(TypeError):
         parse.wrapper()
 
     
 
-
+@pytest.mark.basic
 def test_undefined_param_namespace(caplog):
     params = parse.wrapper(undefined_inputs_namespace)
     for record in caplog.records:
@@ -277,6 +288,7 @@ def test_undefined_param_namespace(caplog):
         assert record.levelname == 'WARNING'
 
     
+@pytest.mark.basic
 def test_correct_input_type_namespace():
 
     params = parse.wrapper(list_inputs_namespace)
@@ -326,6 +338,7 @@ def test_correct_input_type_namespace():
  'ModelMetadata.TrainingDataset.id_col': "['nin', [0,1,3,4]]"})
     assert all(test)
     
+@pytest.mark.basic
 def test_command_line_namespace_and_dict_input():
 
     params = parse.wrapper(command_line_namespace_inputs)
@@ -369,6 +382,7 @@ def test_command_line_namespace_and_dict_input():
  'ModelMetadata.TrainingDataset.id_col': "['nin', [0,1,3,4]]"})
     assert all(test)
     
+@pytest.mark.basic
 def test_hierarchical_dict():
     params = parse.wrapper(hierarchical_input_dict)
     test = []

@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import os
 import sys
+import pytest
 
 import atomsci.ddm.pipeline.model_pipeline as mp
 import atomsci.ddm.pipeline.predict_from_model as pfm
@@ -297,46 +298,57 @@ def H1_double_init():
 
 # Train and Predict
 # -----
+@pytest.mark.basic
 def test_reg_config_delaney_fit_RF_3fold():
     init()
     train_and_predict('jsons/config_delaney_fit_rf_3fold_cv.json') # fine
 
+@pytest.mark.basic
 def test_reg_config_delaney_fit_XGB_3fold():
     init()
     train_and_predict('jsons/config_delaney_fit_xgb_3fold_cv.json') # fine
 
+@pytest.mark.basic
 def test_reg_config_delaney_fit_NN_graphconv():
     init()
     train_and_predict('jsons/reg_config_delaney_fit_NN_graphconv.json') # fine
 
+@pytest.mark.basic
 def test_reg_config_delaney_fit_XGB_mordred_filtered():
     init()
     train_and_predict('jsons/reg_config_delaney_fit_XGB_mordred_filtered.json') # fine
 
+@pytest.mark.basic
 def test_reg_config_delaney_fit_RF_mordred_filtered():
     init()
     train_and_predict('jsons/reg_config_delaney_fit_RF_mordred_filtered.json') # predict_full_dataset broken
 
+@pytest.mark.basic
 def test_reg_kfold_config_delaney_fit_NN_graphconv():
     init()
     train_and_predict('jsons/reg_kfold_config_delaney_fit_NN_graphconv.json') # fine
 
+@pytest.mark.basic
 def test_class_config_delaney_fit_XGB_mordred_filtered():
     init()
     train_and_predict('jsons/class_config_delaney_fit_XGB_mordred_filtered.json') # breaks because labels aren't numbers
 
+@pytest.mark.basic
 def test_class_config_delaney_fit_NN_ecfp():
     init()
     train_and_predict('jsons/class_config_delaney_fit_NN_ecfp.json') # only works for class
 
+@pytest.mark.basic
 def test_multi_class_random_config_delaney_fit_NN_mordred_filtered():
     init()
     train_and_predict('jsons/multi_class_random_config_delaney_fit_NN_mordred_filtered.json') # crashes during run
 
+@pytest.mark.basic
 def test_multi_class_config_delaney_fit_NN_graphconv():
     init()
     train_and_predict('jsons/multi_class_config_delaney_fit_NN_graphconv.json') # fine
 
+@pytest.mark.basic
 def test_multi_reg_config_delaney_fit_NN_graphconv():
     init()
     train_and_predict('jsons/multi_reg_config_delaney_fit_NN_graphconv.json') # fine
@@ -344,29 +356,44 @@ def test_multi_reg_config_delaney_fit_NN_graphconv():
 # MOE doesn't seem to predict delaney very well
 # these are run using H1
 # -------
+@pytest.mark.gpu_required
+@pytest.mark.moe_required
+@pytest.mark.excluded_outside_llnl
 def test_reg_config_H1_fit_XGB_moe():
-    H1_init()
     if llnl_utils.is_lc_system():
+        H1_init()
         train_and_predict('jsons/reg_config_H1_fit_XGB_moe.json', prefix='H1')
 
+@pytest.mark.gpu_required
+@pytest.mark.moe_required
+@pytest.mark.excluded_outside_llnl
 def test_reg_config_H1_fit_NN_moe():
-    H1_init()
     if llnl_utils.is_lc_system():
+        H1_init()
         train_and_predict('jsons/reg_config_H1_fit_NN_moe.json', prefix='H1')
 
+@pytest.mark.gpu_required
+@pytest.mark.moe_required
+@pytest.mark.excluded_outside_llnl
 def test_reg_config_H1_double_fit_NN_moe():
-    H1_double_init()
     if llnl_utils.is_lc_system():
+        H1_double_init()
         train_and_predict('jsons/reg_config_H1_double_fit_NN_moe.json', prefix='H1_double')
 
+@pytest.mark.gpu_required
+@pytest.mark.moe_required
+@pytest.mark.excluded_outside_llnl
 def test_multi_class_random_config_H1_fit_NN_moe():
-    H1_init()
     if llnl_utils.is_lc_system():
+        H1_init()
         train_and_predict('jsons/multi_class_config_H1_fit_NN_moe.json', prefix='H1')
 
+@pytest.mark.gpu_required
+@pytest.mark.moe_required
+@pytest.mark.excluded_outside_llnl
 def test_class_config_H1_fit_NN_moe():
-    H1_init()
     if llnl_utils.is_lc_system():
+        H1_init()
         train_and_predict('jsons/class_config_H1_fit_NN_moe.json', prefix='H1')
 
 if __name__ == '__main__':

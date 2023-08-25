@@ -1,6 +1,7 @@
 import atomsci.ddm.pipeline.parameter_parser as pp
 import argparse
 from typing import List, Union
+import pytest
 
 class A:
     def __init__(self,
@@ -22,6 +23,7 @@ class B(A):
         b_list_int: List[int],):
         print('made class B')
 
+@pytest.mark.basic
 def test_add_arguments_to_parser():
     parser = argparse.ArgumentParser()
     aaa = pp.AutoArgumentAdder(func=B,prefix='b')
@@ -34,6 +36,7 @@ def test_add_arguments_to_parser():
     assert type(args.b_a_list)==str
     assert type(args.b_b_namespace)==str
 
+@pytest.mark.basic
 def test_list_float_args():
     aaa = pp.AutoArgumentAdder(func=B,prefix='b')
 
@@ -41,6 +44,7 @@ def test_list_float_args():
 
     assert set(float_list) == set(['b_a_union_list_float', 'b_b_list_float'])
 
+@pytest.mark.basic
 def test_list_int_args():
     aaa = pp.AutoArgumentAdder(func=B,prefix='b')
 
@@ -48,6 +52,7 @@ def test_list_int_args():
 
     assert set(int_list) == set(['b_a_union_list_int', 'b_b_list_int'])
 
+@pytest.mark.basic
 def test_list_args():
     aaa = pp.AutoArgumentAdder(func=B,prefix='b')
 
@@ -56,6 +61,7 @@ def test_list_args():
     assert set(list_list) == set(['b_b_list_int', 'b_b_list_float',
         'b_a_list', 'b_a_nother_list', 'b_a_union_list_int', 'b_a_union_list_float', 'b_a_union'])
 
+@pytest.mark.basic
 def test_synonyms():
     answer_a = {
         "mode": "regression",
@@ -104,6 +110,7 @@ def test_synonyms():
     assert not aaa.extract_params(params_a) == aaa.extract_params(params_c)
     assert not aaa.extract_params(params_b) == aaa.extract_params(params_c)
 
+@pytest.mark.basic
 def test_defaults():
     json_d = {
         "prediction_type": "classification",

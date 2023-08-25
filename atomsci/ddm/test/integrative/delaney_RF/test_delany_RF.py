@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import os
 import sys
+import pytest
 
 import atomsci.ddm.pipeline.model_pipeline as mp
 import atomsci.ddm.pipeline.parameter_parser as parse
@@ -79,7 +80,7 @@ def download():
 
     assert (os.path.isfile('delaney-processed.csv'))
 
-
+@pytest.mark.basic
 def test():
     """
     Test full model pipeline: Curate data, fit model, and predict property for new compounds

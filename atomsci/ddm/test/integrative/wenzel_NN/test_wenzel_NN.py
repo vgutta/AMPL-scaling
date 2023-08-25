@@ -7,12 +7,12 @@ import os
 import shutil
 import sys
 import zipfile
+import pytest
 
 import atomsci.ddm.pipeline.model_pipeline as mp
 import atomsci.ddm.pipeline.parameter_parser as parse
 import atomsci.ddm.utils.curate_data as curate_data
 import atomsci.ddm.utils.struct_utils as struct_utils
-import atomsci.ddm.utils.file_utils as futils
 from atomsci.ddm.utils import llnl_utils
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -46,7 +46,7 @@ def curate():
     Curate dataset for model fitting
     """
     with zipfile.ZipFile('ci8b00785_si_001.zip', 'r') as zip_ref:
-        futils.safe_extract(zip_ref, 'clearance')
+        zip_ref.extractall('clearance')
 
     raw_df = pd.read_csv('clearance/SuppInfo/Dataset_chembl_clearcaco.txt', sep=";", dtype='str')
 
@@ -98,7 +98,7 @@ def download():
 
     assert(os.path.isfile('ci8b00785_si_001.zip'))
 
-
+@pytest.mark.basic
 def test():
     """
     Test full model pipeline: Curate data, fit model, and predict property for new compounds

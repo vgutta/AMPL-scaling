@@ -4,12 +4,14 @@ from atomsci.ddm.pipeline import parameter_parser as parse
 import pandas as pd
 import sklearn.metrics as skm
 from atomsci.ddm.utils import llnl_utils
+import pytest
 
 '''
 make sure that the various ways of making predictions return
 predictions in the same order as the input
 '''
-
+@pytest.mark.gpu_required
+@pytest.mark.excluded_outside_llnl
 def test_predict_from_model():
     '''
     test that predict_from_model makes predictions in the same
@@ -45,6 +47,8 @@ def test_predict_from_model():
     print('accuracy score', score)
     assert score > 0.5
 
+@pytest.mark.gpu_required
+@pytest.mark.excluded_outside_llnl
 def test_predict_on_dataframe():
     '''
     test that predict_from_model makes predictions in the same

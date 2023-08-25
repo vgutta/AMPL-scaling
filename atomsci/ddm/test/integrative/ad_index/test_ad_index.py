@@ -6,21 +6,24 @@ import pandas as pd
 import os
 import sys
 import glob
+import pytest
 
 import atomsci.ddm.pipeline.parameter_parser as parse
 from atomsci.ddm.pipeline import model_pipeline as mp
 from atomsci.ddm.pipeline import predict_from_model as pfm
+import atomsci.ddm.utils.test_utils as tu
 
 def clean():
     """
     Clean test files
     """
-    if "output" not in os.listdir():
-        os.mkdir("output")
-    for f in os.listdir("./output"):
-        if os.path.isfile("./output/"+f):
-            os.remove("./output/"+f)
+    if "output" not in os.listdir( os.path.dirname(__file__)):
+        os.mkdir(tu.relative_to_file(__file__,"output"))
+    for f in os.listdir(tu.relative_to_file(__file__,"./output")):
+        if os.path.isfile(tu.relative_to_file(__file__,"./output/"+f)):
+            os.remove(tu.relative_to_file(__file__,"./output/"+f))
 
+@pytest.mark.basic
 def test():
     """
     Test full model pipeline: Curate data, fit model, and predict property for new compounds
@@ -32,7 +35,7 @@ def test():
 
     # Run HyperOpt
     # ------------
-    with open("H1_RF.json", "r") as f:
+    with open(tu.relative_to_file(__file__,"H1_RF.json"), "r") as f:
         hp_params = json.load(f)
 
     script_dir = parse.__file__.strip("parameter_parser.py").replace("/pipeline/", "")
@@ -42,8 +45,9 @@ def test():
 
     params = parse.wrapper(hp_params)
     if not os.path.isfile(params.dataset_key):
-        params.dataset_key = os.path.join(params.script_dir, params.dataset_key)
-
+        # reconstruct the absolute dir for the dataset key file (parent / test / test_datasets / file)
+        params.dataset_key = os.path.join(params.script_dir, 'test', params.dataset_key.split(os.path.sep)[-2], params.dataset_key.split(os.path.sep)[-1])
+    
     train_df = pd.read_csv(params.dataset_key)
 
     print(f"Train a RF models with ECFP")

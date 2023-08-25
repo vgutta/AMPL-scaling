@@ -3,9 +3,13 @@ import os
 from atomsci.ddm.pipeline import compare_models as cm
 from atomsci.ddm.utils import llnl_utils
 
+import pytest
+
 def clean():
     pass
 
+@pytest.mark.gpu_required
+@pytest.mark.excluded_outside_llnl
 def test():
     if not llnl_utils.is_lc_system():
         assert True
@@ -19,6 +23,7 @@ def test():
 
     assert num_params == 25147
 
+@pytest.mark.basic
 def test_graphconv():
     tar_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 
         '../../examples/BSEP/models/bsep_classif_scaffold_split_graphconv.tar.gz')
@@ -28,6 +33,7 @@ def test_graphconv():
 
     assert num_params == 194306
 
+@pytest.mark.basic
 def test_versions_not_compatible():
     tar_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
         '../../examples/tutorials/models/aurka_union_trainset_base_smiles_model_ampl_120_2fb9ae80-26d4-4f27-af28-2e9e9db594de.tar.gz')
@@ -37,6 +43,7 @@ def test_versions_not_compatible():
     except ValueError as exc:
         assert True, f"Version compatible check has raised an exception {exc}"
 
+@pytest.mark.basic
 def test_versions_compatible():
     tar_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
         '../../examples/BSEP/models/bsep_classif_scaffold_split_graphconv.tar.gz')

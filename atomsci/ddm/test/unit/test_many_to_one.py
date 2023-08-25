@@ -4,10 +4,13 @@ import pandas as pd
 import atomsci.ddm.utils.many_to_one as mto
 import atomsci.ddm.pipeline.parameter_parser as pp
 
+import pytest
+
 def test_mto_pass():
     pass_file = os.path.abspath(os.path.join(__file__, '../../test_datasets/many_to_one_pass.csv'))
     mto.many_to_one(pass_file, 'smiles_col', 'id_col')
 
+@pytest.mark.basic
 def test_mto_fail():
     fail_file = os.path.abspath(os.path.join(__file__, '../../test_datasets/many_to_one_fail.csv'))
     try:
@@ -19,6 +22,7 @@ def test_mto_fail():
     except:
         raise Exception('Got the wrong exception, expected ManyToOneException')
 
+@pytest.mark.basic
 def test_mto_fail2():
     fail_df = pd.DataFrame(data={'id_col':['a', 'b', 'c', 'c', 'a', 'd'], 'smiles_col':['1', '2', '3', '4', '1', '5']})
     try:
@@ -30,11 +34,13 @@ def test_mto_fail2():
     except:
         raise Exception('Got the wrong exception, expected ManyToOneException')
 
+@pytest.mark.basic
 def test_mto_pass2():
     fail_df = pd.DataFrame(data={'id_col':['a', 'b', 'c', 'c', 'a', 'd'], 
         'smiles_col':['1', '1', '3', '3', '1', '5']})
     mto.many_to_one_df(fail_df, 'smiles_col', 'id_col')
 
+@pytest.mark.basic
 def test_mto_nan():
     fail_file = os.path.abspath(os.path.join(__file__, '../../test_datasets/many_to_one_nan.csv'))
     try:
@@ -46,6 +52,7 @@ def test_mto_nan():
     except:
         raise Exception('Got the wrong exception, expected NANCompoundIDException')
 
+@pytest.mark.basic
 def test_mto_nan2():
     fail_file = os.path.abspath(os.path.join(__file__, '../../test_datasets/many_to_one_nan2.csv'))
     try:
@@ -57,6 +64,7 @@ def test_mto_nan2():
     except:
         raise Exception('Got the wrong exception, expected NANSMILESException')
 
+@pytest.mark.basic
 def test_pp_pass():
     pass_file = os.path.abspath(os.path.join(__file__, '../../test_datasets/many_to_one_pass.csv'))
     params = {
@@ -79,6 +87,7 @@ def test_pp_pass():
 
     parsed_params = pp.wrapper(params)
 
+@pytest.mark.basic
 def test_pp_fail():
     fail_file = os.path.abspath(os.path.join(__file__, '../../test_datasets/many_to_one_fail.csv'))
     params = {

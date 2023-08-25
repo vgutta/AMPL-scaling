@@ -2578,7 +2578,7 @@ class MultitaskDCModelWrapper(PytorchDeepChemModelWrapper):
         return model_spec_metadata
 
 # ****************************************************************************************
-class KerasDeepChemModelWrapper(PytorchDeepChemModelWrapper):
+class KerasDeepChemModelWrapper():
     def _copy_model(self, dest_dir):
         """Copies the files needed to recreate a DeepChem NN model from the current model
         directory to a destination directory.

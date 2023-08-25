@@ -6,6 +6,7 @@ import os
 import sys
 import shutil
 import glob
+import pytest
 
 import atomsci.ddm.pipeline.model_pipeline as mp
 import atomsci.ddm.pipeline.predict_from_model as pfm
@@ -29,6 +30,7 @@ def clean():
     if os.path.exists('scaled_descriptors'):
         shutil.rmtree('scaled_descriptors')
 
+@pytest.mark.basic
 def test_RF():
     # init training dataset
     init()

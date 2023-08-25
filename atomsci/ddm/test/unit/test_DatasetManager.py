@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from atomsci.ddm.pipeline.splitting import DatasetManager, _copy_modify_NumpyDataset
 import pdb
+import pytest
 
 def make_test_dataset_and_attr():
     ids = ['a', 'a', 'b', 'b', 'c']
@@ -63,6 +64,7 @@ def check_smiles(expected_smiles, attr_df, smiles_col):
     expanded_smiles = attr_df[smiles_col].values
     assert all([a==b for a, b in zip(expanded_smiles, expected_smiles)]), f'Expecting {expected_smiles}. Expanded {expanded_smiles}'
 
+@pytest.mark.basic
 def test__copy_modify_NumpyDataset():
     dd, attr_df, smiles_col = make_test_dataset_and_attr()
     new_X = np.zeros_like(dd.X)
@@ -72,6 +74,7 @@ def test__copy_modify_NumpyDataset():
     check_arrays(new_X, copied_dataset.X)
     check_arrays(new_y, copied_dataset.y)
 
+@pytest.mark.basic
 def test_DatasetManager_no_dupes():
     dd, attr_df, smiles_col = make_test_dataset_and_attrB()
     dm = DatasetManager(dataset=dd,
@@ -92,6 +95,7 @@ def test_DatasetManager_no_dupes():
     expected_smiles = ['aaa', 'bbb', 'eee']
     check_smiles(expected_smiles, sel_attr, smiles_col)
 
+@pytest.mark.basic
 def test_DatasetManager_doesnot_needs_smiles():
     dd, attr_df, smiles_col = make_test_dataset_and_attr()
     dm = DatasetManager(dataset=dd,
@@ -115,6 +119,7 @@ def test_DatasetManager_doesnot_needs_smiles():
     expected_smiles = ['aaa', 'aaa', 'bbb', 'bbb']
     check_smiles(expected_smiles, sel_attr, smiles_col)
 
+@pytest.mark.basic
 def test_DatasetManager_needs_smiles():
     dd, attr_df, smiles_col = make_test_dataset_and_attr()
     dm = DatasetManager(dataset=dd,
@@ -139,6 +144,7 @@ def test_DatasetManager_needs_smiles():
     expected_smiles = ['aaa', 'aaa', 'bbb', 'bbb']
     check_smiles(expected_smiles, sel_attr, smiles_col)
 
+@pytest.mark.basic
 def test_DatasetManager_many_to_one():
     ids = ['a', 'a', 'b', 'b', 'c']
     dd = DiskDataset.from_numpy(

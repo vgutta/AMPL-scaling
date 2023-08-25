@@ -42,7 +42,8 @@ if not datastore_is_down:
 
 """
 
-#***********************************************************************************  
+#*********************************************************************************** 
+@pytest.mark.basic 
 def test_remove_duplicate_smiles(caplog):
     """checking for removal of duplicates and activity with dataframes with no dupes"""
     #checking for a file with no dupes
@@ -59,7 +60,7 @@ def test_remove_duplicate_smiles(caplog):
         test.append(len(set(no_dupe_df[datastore_params.smiles_col].values.tolist())) <= len(no_dupe_df))
     assert all(test)
 #***********************************************************************************
-
+@pytest.mark.basic
 def test_create_featurization_dynamicfeaturization():
     """testing if classes are properly generated from the factory method. Asserting that the correct methods exist, and are callable. Asserting correct dc featurizer object is called"""
     test = []
@@ -80,6 +81,7 @@ def test_create_featurization_dynamicfeaturization():
 
     
 #***********************************************************************************    
+@pytest.mark.basic
 def test_get_feature_columns_dynamicfeaturization():
     """ Testing that dynamic featurization is pulling out the correct number of features and 'column names'. Also technically testing get_feature_count"""
     test = []
@@ -142,18 +144,19 @@ def test_get_feature_columns_dynamicfeaturization():
     
 
 #***********************************************************************************
+@pytest.mark.basic
 def test_get_featurized_dset_name_dynamicfeaturization():
     """Dynamic featurization does not support get_featurized_dset_name """
     with pytest.raises(Exception):
         featurizer_ecfp.get_featurized_dset_name(data_obj_ecfp.dataset_name)
 #***********************************************************************************
-
+@pytest.mark.basic
 def test_get_featurized_data_subdir_dynamicfeaturization():
     """Dynamic featurization does not support get_featurized_data_subdir """
     with pytest.raises(Exception):
         featurizer_ecfp.get_featurized_data_subdir()
 #***********************************************************************************
-
+@pytest.mark.basic
 def test_get_feature_specific_metadata_dynamicfeaturization():
     """Dynamic featurization returns a dictionary of parameter settings of the featurization object that are specific to the feature type. Testing all three currently implemented featurizers (ecfp, graphconv, molvae)"""
     ecfp_metadata = featurizer_ecfp.get_feature_specific_metadata(delaney_params_ecfp)

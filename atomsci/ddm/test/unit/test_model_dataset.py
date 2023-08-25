@@ -49,6 +49,7 @@ DD = dc.data.datasets.NumpyDataset
 
 
 #***********************************************************************************
+@pytest.mark.basic
 def test_create_model_dataset():
     """testing if classes are properly generated from the factory method. Asserting that the correct methods exist, and are callable. """
 
@@ -81,7 +82,7 @@ def test_create_model_dataset():
 
 
 #***********************************************************************************
-
+@pytest.mark.basic
 def test_load_full_dataset():
     """Full dataset is properly loaded. Comparing against datastore_functions and dataframe loading for the FileDataset and DatastoreDataset subclasses"""
     (params_from_file, dataset_obj_from_file, df_delaney) = utils.delaney_objects()
@@ -95,7 +96,7 @@ def test_load_full_dataset():
         from_method_datastore = dataset_obj_from_datastore.load_full_dataset()
         assert from_method_datastore.equals(df_datastore)
 #***********************************************************************************
-
+@pytest.mark.basic
 def test_get_dataset_tasks():
     """Testing task extraction with self.params.response_cols as a single value or a list.
         From Datastore, if y is not defined, should extract from the dataset itself.
@@ -147,7 +148,7 @@ def test_get_dataset_tasks():
 
 #***********************************************************************************
 
-
+@pytest.mark.basic
 def test_check_task_columns():
     """Checks that self.tasks exist, then checks that the requested self.tasks all exist within the dataframe. Throws exception if self.get_dataset_tasks is False or if prediction tasks are missing. Testing for exception raising on bad task columns and success. """
     (params_from_file, dataset_obj_from_file, df_delaney) = utils.delaney_objects()
@@ -192,6 +193,7 @@ def test_set_group_permissions():
     pass
 """
 #***********************************************************************************
+@pytest.mark.basic
 def test_get_featurized_data():
     """Tries to load a previously prefeaturized dataset, then creates featurization, instantiates n_features, and dumps a pickle file of the transformers if they exist. Implemented in super. The dataset object from file is a delaney dataset using an ecfp featurizer with a default scaffold split. Testing of featurization of the dataset is extensively done in test_featurization.py
     """
@@ -209,7 +211,7 @@ def test_get_featurized_data():
     assert all(test_list)
 
 #***********************************************************************************
-
+@pytest.mark.basic
 def test_get_featurized_data_scaffold():
     """Tries to load a previously prefeaturized dataset, then creates featurization, instantiates n_features, and dumps a pickle file of the transformers if they exist. Implemented in super. The dataset object from file is a delaney dataset using an ecfp featurizer with a default scaffold split. Testing of featurization of the dataset is extensively done in test_featurization.py
     """
@@ -231,7 +233,7 @@ def test_get_featurized_data_scaffold():
 
 
 #***********************************************************************************
-
+@pytest.mark.basic
 def test_split_dataset():
     """ Uses the split_datset method of splitting to split data. Implemented in super. Because the various splitting strategies are heavily tested in test_splitting.py, this test is simply ensuring that the attributes are appropriately created.
     """
@@ -261,7 +263,7 @@ def test_split_dataset():
     assert all(test_list)
 
 #***********************************************************************************
-
+@pytest.mark.basic
 def test_save_split_dataset():
     """Saves the compound IDs and smiles strings for a split subset. Implemented in super
     """
@@ -276,7 +278,7 @@ def test_save_split_dataset():
     assert os.path.isfile(split_path)
 
 #***********************************************************************************
-
+@pytest.mark.basic
 def test_load_presplit_dataset():
     # Loads in the split files from disk. Uses splitting.get_split_prefix to specify the path of the split file. Uses splitting.select_dset_by_attr_ids. Returns True or False. Initializes self.train_valid_attr, self.train_valid_dsets, self.test_attr, self.test_dset. Implemented in super.
     (params_from_file, dataset_obj_from_file, df_delaney) = utils.delaney_objects()
@@ -310,7 +312,7 @@ def test_load_presplit_dataset():
 
 
 #***********************************************************************************
-
+@pytest.mark.basic
 def test_combine_training_data():
     """ Concatenates train and valid from self.train_valid_dsets[0] into a combined DiskDataset. Implemented in super.
     """
@@ -325,7 +327,7 @@ def test_combine_training_data():
     concat_train_valid = np.concatenate((orig_train.ids, orig_valid.ids))
     assert (concat_train_valid == dataset_obj_from_file.combined_train_valid_data.ids).all()
 #***********************************************************************************
-
+@pytest.mark.basic
 def test_split_dataset_scaffold():
     """ Uses the split_datset method of splitting to split data. Implemented in super. Because the various splitting strategies are heavily tested in test_splitting.py, this test is simply ensuring that the attributes are appropriately created.
     """
@@ -345,6 +347,7 @@ def test_split_dataset_scaffold():
     assert all(test_list)
     
 #***********************************************************************************
+@pytest.mark.basic
 def test_combine_training_data_scaffold():
     """ Concatenates train and valid from self.train_valid_dsets[0] into a combined DiskDataset. Implemented in super.
     """
@@ -366,7 +369,7 @@ def test_combine_training_data_scaffold():
 
     
 #***********************************************************************************
-
+@pytest.mark.basic
 def test_get_split_metadata():
     """ pulls a dictionary that contains the splitting strategy and splitter used to generate the model.
     """
@@ -388,7 +391,7 @@ def test_get_split_metadata():
     
     
 #***********************************************************************************
-
+@pytest.mark.basic
 def test_load_presplit_dataset():
     # open the test
     with open("../test_datasets/H1_hybrid.json", "r") as f:

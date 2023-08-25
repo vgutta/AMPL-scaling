@@ -5,6 +5,7 @@ import json
 import subprocess
 import os
 import time
+import pytest
 
 import atomsci.ddm.pipeline.parameter_parser as parse
 import atomsci.ddm.pipeline.compare_models as cm
@@ -116,19 +117,21 @@ def wait_to_finish(maestro_run_command, max_time=600):
 
     return True
 
+@pytest.mark.slurm_required
+@pytest.mark.excluded_outside_llnl
 def test():
     """
     Test full model pipeline: Curate data, fit model, and predict property for new compounds
     """
 
-    # Clean
-    # -----
-    clean()
-
     if not llnl_utils.is_lc_system():
         assert True
         return
-        
+    
+    # Clean
+    # -----
+    clean()
+     
     # Run ECFP NN hyperparam search
     # ------------
     json_file = "nn_ecfp.json"

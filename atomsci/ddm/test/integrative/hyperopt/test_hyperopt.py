@@ -8,6 +8,7 @@ import sys
 import glob
 
 import atomsci.ddm.pipeline.parameter_parser as parse
+import pytest
 
 def clean():
     """
@@ -24,6 +25,7 @@ def clean():
         if os.path.isfile("./tmp/"+f):
             os.remove("./tmp/"+f)
 
+@pytest.mark.basic
 def test():
     """
     Test full model pipeline: Curate data, fit model, and predict property for new compounds

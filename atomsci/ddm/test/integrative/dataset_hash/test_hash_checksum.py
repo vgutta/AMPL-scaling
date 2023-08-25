@@ -2,6 +2,7 @@ import os
 import json 
 import glob
 import fnmatch
+import pytest
 
 import atomsci.ddm.utils.checksum_utils as cu
 import atomsci.ddm.pipeline.parameter_parser as parse
@@ -20,18 +21,21 @@ def clean():
         if os.path.isfile("./result/"+f):
             os.remove("./result/"+f)
 
+@pytest.mark.basic
 def test_create_checksum():
     csv_file = os.path.abspath('../../../examples/tutorials/datasets/HTR3A_ChEMBL.csv')
     hash_value = '491463a16315d70ee973c9eb699f36f9'
 
     assert cu.create_checksum(csv_file) == hash_value
 
+@pytest.mark.basic
 def test_uses_same_training_data_by_datasets():
     file1 = os.path.abspath('../../../examples/tutorials/datasets/HTR3A_ChEMBL.csv')
     file2 = os.path.abspath('../../../examples/tutorials/datasets/HTR3A_ChEMBL.csv')
 
     assert cu.uses_same_training_data_by_datasets(file1, file2) == True
 
+@pytest.mark.basic
 def test_uses_same_training_data_not_equals_by_datasets():
     file1 = os.path.abspath('../../../examples/tutorials/datasets/HTR3A_ChEMBL.csv')
     file2 = os.path.abspath('../../../examples/tutorials/datasets/DTC_HTR3A.csv')
@@ -39,6 +43,7 @@ def test_uses_same_training_data_not_equals_by_datasets():
     assert cu.uses_same_training_data_by_datasets(file1, file2) == False
 
 # train the same file twice. then compare the checksums. they should match
+@pytest.mark.basic
 def test_uses_same_training_data_by_tars_delaney_train_NN():
     # test 1
     json_file = 'jsons/config_delaney_train_NN.json'
@@ -50,6 +55,7 @@ def test_uses_same_training_data_by_tars_delaney_train_NN():
     assert cu.uses_same_training_data_by_tarballs(tar1, tar2) == True
 
 # train the same file twice. then compare the checksums. they should match
+@pytest.mark.basic
 def test_uses_same_training_data_by_tars_nn_ecfp():
     # test 2
     json_file = 'jsons/nn_ecfp.json'
@@ -61,6 +67,7 @@ def test_uses_same_training_data_by_tars_nn_ecfp():
     assert cu.uses_same_training_data_by_tarballs(tar1, tar2) == True
 
 # train the same file twice. then compare the checksums. they should match
+@pytest.mark.basic
 def test_uses_same_training_data_by_tars_delaney_train_RF_mordred():
     # test 3
     json_file = 'jsons/reg_config_delaney_fit_RF_mordred_filtered.json'
@@ -71,6 +78,7 @@ def test_uses_same_training_data_by_tars_delaney_train_RF_mordred():
 
     assert cu.uses_same_training_data_by_tarballs(tar1, tar2) == True
 
+@pytest.mark.basic
 def test_uses_same_training_data_not_equals_by_tars():
     json_file1 = 'jsons/config_delaney_train_NN.json'
     json_file2 = 'jsons/nn_ecfp.json'

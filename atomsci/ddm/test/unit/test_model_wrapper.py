@@ -46,6 +46,7 @@ general_params = {'dataset_key' : './delaney-processed.csv',
 DD = dc.data.datasets.NumpyDataset
 
 #***********************************************************************************
+@pytest.mark.basic
 def test_create_model_wrapper():
     """
         Args:
@@ -99,6 +100,7 @@ MultitaskDCModelWrapper, DCRFModelWrapper
 
 
 #***********************************************************************************
+@pytest.mark.basic
 def test_super_create_transformers():
     """
     Args:
@@ -161,6 +163,7 @@ def test_super_create_transformers():
 
 
 #***********************************************************************************
+@pytest.mark.basic
 def test_super_transform_dataset():
     """
     Args:
@@ -283,6 +286,7 @@ def test_super_transform_dataset():
 #    assert all(test4)
 
 #***********************************************************************************
+@pytest.mark.basic
 def test_train_NN_graphconv_scaffold_inputs():
     """
 
@@ -326,6 +330,7 @@ def test_train_NN_graphconv_scaffold_inputs():
     assert all(test1)
     
     #***********************************************************************************
+    @pytest.mark.basic
     def test_super_get_train_valid_pred_results():
         """
         Args:
@@ -348,6 +353,7 @@ def test_train_NN_graphconv_scaffold_inputs():
     # should still be called to make sure that the function is callable
 
     #***********************************************************************************
+    @pytest.mark.basic
     def test_super_get_test_perf_data():
         """
         Args:
@@ -373,6 +379,7 @@ def test_train_NN_graphconv_scaffold_inputs():
         # mostly tested in accumulate_preds, but should be tested to ensure taht the predictions are properly being called
 
     #***********************************************************************************
+    @pytest.mark.basic
     def test_super_get_test_pred_results():
         """
         Args:
@@ -397,6 +404,7 @@ def test_train_NN_graphconv_scaffold_inputs():
         #mostly tested in perf_data.get_prediction_results
 
     #***********************************************************************************
+    @pytest.mark.basic
     def test_super_get_full_dataset_perf_data():
         """
         Args:
@@ -419,6 +427,7 @@ def test_train_NN_graphconv_scaffold_inputs():
         pass
 
     #***********************************************************************************
+    @pytest.mark.basic
     def test_super_get_full_dataset_pred_results():
         """
         Args:

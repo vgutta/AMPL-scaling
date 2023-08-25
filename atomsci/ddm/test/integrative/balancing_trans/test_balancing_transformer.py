@@ -1,5 +1,6 @@
 import pandas as pd
 import tempfile
+import pytest
 
 import atomsci.ddm.pipeline.parameter_parser as parse
 import atomsci.ddm.pipeline.model_pipeline as mp
@@ -13,6 +14,7 @@ vals = []
 balanced = []
 subset = []
 
+@pytest.mark.basic
 def test_balancing_transformer():
     dset_key = '../../test_datasets/MRP3_dataset.csv'
     dset_df = pd.read_csv(dset_key)

@@ -5,12 +5,14 @@ import numpy as np
 import pandas as pd
 import os
 import sys
+import pytest
 
 import atomsci.ddm.pipeline.parameter_parser as parse
 from atomsci.ddm.pipeline import model_pipeline as mp
 from atomsci.ddm.utils import llnl_utils
 
 from sklearn.metrics import r2_score
+import pytest
 
 def clean():
     """
@@ -22,18 +24,19 @@ def clean():
         if os.path.isfile("./output/"+f):
             os.remove("./output/"+f)
 
+@pytest.mark.moe_required
+@pytest.mark.excluded_outside_llnl
 def test():
     """
     Test full model pipeline: Curate data, fit model, and predict property for new compounds
     """
-
-    # Clean
-    # -----
-    clean()
-
     if not llnl_utils.is_lc_system():
         assert True
         return
+    
+    # Clean
+    # -----
+    clean()
 
     # Run HyperOpt
     # ------------

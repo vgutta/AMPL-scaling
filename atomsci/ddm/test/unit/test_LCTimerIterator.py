@@ -3,7 +3,10 @@ import logging
 import time
 from argparse import Namespace
 from atomsci.ddm.utils import llnl_utils
+import pytest 
 
+@pytest.mark.slurm_required
+@pytest.mark.excluded_outside_llnl
 def test_LCTimerIterator_too_long():
     if not llnl_utils.is_lc_system():
         assert True
@@ -28,6 +31,7 @@ def test_LCTimerIterator_too_long():
 
     assert params.max_epochs <= 18
 
+@pytest.mark.basic
 def test_LCTimerIterator_finishes_all_epochs():
     # make fake parameters
     params = Namespace(max_epochs=10, slurm_time_limit=60)
@@ -46,6 +50,8 @@ def test_LCTimerIterator_finishes_all_epochs():
 
     assert params.max_epochs == 10
 
+@pytest.mark.slurm_required
+@pytest.mark.excluded_outside_llnl
 def test_LCTimerKFoldIterator_too_long():
     if not llnl_utils.is_lc_system():
         assert True
@@ -70,6 +76,7 @@ def test_LCTimerKFoldIterator_too_long():
 
     assert params.max_epochs <= 18
 
+@pytest.mark.basic
 def test_LCTimerKFoldIterator_finishes_all_epochs():
     # make fake parameters
     params = Namespace(max_epochs=10, slurm_time_limit=60)

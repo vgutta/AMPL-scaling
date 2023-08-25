@@ -5,6 +5,7 @@ import numpy as np
 import json
 import os
 import sys
+import pytest
 
 import atomsci.ddm.pipeline.parameter_parser as parse
 import atomsci.ddm.pipeline.model_pipeline as mp
@@ -56,6 +57,7 @@ def find_best_test_metric(model_metrics):
 
     return None
 
+@pytest.mark.basic
 def test_kfold():
     script_path = os.path.dirname(os.path.realpath(__file__))
     json_file = os.path.join(script_path, 'nn_ecfp_kfold.json')
@@ -67,6 +69,7 @@ def test_kfold():
 
     saved_model_identity(pparams)
 
+@pytest.mark.basic
 def test_graphconv():
     script_path = os.path.dirname(os.path.realpath(__file__))
     json_file = os.path.join(script_path, 'nn_graph.json')
@@ -79,6 +82,7 @@ def test_graphconv():
 
     saved_model_identity(pparams)
 
+@pytest.mark.basic
 def test_ecfp_nn():
     script_path = os.path.dirname(os.path.realpath(__file__))
     json_file = os.path.join(script_path, 'nn_ecfp.json')
@@ -91,6 +95,7 @@ def test_ecfp_nn():
 
     saved_model_identity(pparams)
 
+@pytest.mark.basic
 def test_train_valid_test():
     script_path = os.path.dirname(os.path.realpath(__file__))
     json_file = os.path.join(script_path, 'nn_ecfp_random.json')
@@ -102,6 +107,7 @@ def test_train_valid_test():
 
     saved_model_identity(pparams)
 
+@pytest.mark.basic
 def test_attentivefp():
     script_path = os.path.dirname(os.path.realpath(__file__))
     json_file = os.path.join(script_path, 'attentivefp_random.json')
@@ -113,6 +119,7 @@ def test_attentivefp():
 
     saved_model_identity(pparams)
 
+@pytest.mark.basic
 def test_gcnmodel():
     script_path = os.path.dirname(os.path.realpath(__file__))
     json_file = os.path.join(script_path, 'gcnmodel_random.json')
@@ -124,6 +131,7 @@ def test_gcnmodel():
 
     saved_model_identity(pparams)
 
+@pytest.mark.basic
 def test_graphconvmodel():
     script_path = os.path.dirname(os.path.realpath(__file__))
     json_file = os.path.join(script_path, 'GraphConvModel_random.json')
@@ -135,6 +143,7 @@ def test_graphconvmodel():
 
     saved_model_identity(pparams)
 
+@pytest.mark.basic
 def test_mpnnmodel():
     script_path = os.path.dirname(os.path.realpath(__file__))
     json_file = os.path.join(script_path, 'MPNNModel_random.json')
@@ -146,6 +155,7 @@ def test_mpnnmodel():
 
     saved_model_identity(pparams)
 
+@pytest.mark.basic
 def test_pytorchmpnnmodel():
     script_path = os.path.dirname(os.path.realpath(__file__))
     json_file = os.path.join(script_path, 'PytorchMPNNModel_random.json')

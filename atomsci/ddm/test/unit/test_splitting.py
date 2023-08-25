@@ -2,6 +2,7 @@ import os
 import sys
 import pandas as pd
 import inspect
+import pytest
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
@@ -54,6 +55,7 @@ DD = dc.data.datasets.NumpyDataset
 PDF = pd.core.frame.DataFrame
 
 #***********************************************************************************
+@pytest.mark.basic
 def test_split_dataset_kfold_scaffold_from_pipeline(caplog):
     #Testing for correct type and length of dataset for k-fold splitting with a scaffold splitter     
     #Testing a 3-fold split first for uniqueness of all validation and training sets. 
@@ -116,6 +118,7 @@ def test_split_dataset_kfold_scaffold_from_pipeline(caplog):
     
 
 #***********************************************************************************  
+@pytest.mark.basic
 def test_create_splitting(caplog):
     """testing factory function to create splitting object"""
     test = []
@@ -134,6 +137,7 @@ def test_create_splitting(caplog):
         
 #***********************************************************************************  
 
+@pytest.mark.basic
 def test_needs_smiles(caplog):
     """returns True if dc splitter requires compound IDs to be SMILES strings"""
     assert not splitter_random.needs_smiles()
@@ -142,6 +146,7 @@ def test_needs_smiles(caplog):
         
 #***********************************************************************************  
         
+@pytest.mark.basic
 def test_get_split_prefix(caplog):
     """returns a string that identifies the split strategy and the splitting method"""
     assert splitter_k_fold_scaffold.get_split_prefix(parent='test_fold') == "test_fold/" + str(splitter_k_fold_scaffold.num_folds) + "_fold_cv_" + str(splitter_k_fold_scaffold.split)
@@ -149,6 +154,7 @@ def test_get_split_prefix(caplog):
 
 #***********************************************************************************
 
+@pytest.mark.basic
 def test_split_dataset_random(caplog):
     #Testing for correct type and length of dataset for trainvalidtest splitting with a random splitter
     ([(train,valid)], test_data, [(train_attr,valid_attr)],test_attr) = splitter_random.split_dataset(data_obj_random.dataset, data_obj_random.attr, data_obj_random.params.smiles_col)
@@ -176,6 +182,7 @@ def test_split_dataset_random(caplog):
     assert all(test)
     
 #***********************************************************************************
+@pytest.mark.basic
 def test_split_dataset_scaffold(caplog):
     #Testing for correct type and length of dataset for trainvalidtest splitting with a scaffold splitter
     ([(train,valid)], test_data, [(train_attr,valid_attr)],test_attr) = splitter_scaffold.split_dataset(data_obj_scaffold.dataset, data_obj_scaffold.attr, data_obj_scaffold.params.smiles_col)
@@ -206,6 +213,7 @@ def test_split_dataset_scaffold(caplog):
 dataset_scaffold = DiskDataset.from_numpy(data_obj_scaffold.dataset.X, data_obj_scaffold.dataset.y, ids=data_obj_scaffold.attr.index)
 
 
+@pytest.mark.basic
 def test_select_dset_by_attr_ids_using_smiles():
     #testing that the method can split a dataset according to its attr ids into the correct deepchem diskdataframe. In this case, the attr_ids are converted back to smiles to match the input dataset.
     dataset = DiskDataset.from_numpy(data_obj_scaffold.dataset.X, data_obj_scaffold.dataset.y, ids=data_obj_scaffold.attr[data_obj_scaffold.params.smiles_col].values)
@@ -214,12 +222,14 @@ def test_select_dset_by_attr_ids_using_smiles():
     assert (sorted(newDD.y) == sorted(test_scaffold.y))
 #***********************************************************************************
 
+@pytest.mark.basic
 def test_select_dset_by_attr_ids_using_compound_ids():
     #testing that the method can split a dataset according to its attr ids into the correct deepchem diskdataframe. This test uses compound_ids.
     newDD = split.select_dset_by_attr_ids(dataset_scaffold, test_scaffold_attr)
     assert (sorted(newDD.y) == sorted(test_scaffold.y))
 #***********************************************************************************
 
+@pytest.mark.basic
 def test_select_dset_by_id_list():
     #testing that the method can split a dataset according to a list of compound_ids into the correct deepchem diskdataframe.
     
@@ -229,6 +239,7 @@ def test_select_dset_by_id_list():
 #***********************************************************************************
 
 
+@pytest.mark.basic
 def test_select_attrs_by_dset_ids():
     #testing that the method can split a attr according to a disk dataset, using compound_ids
     newDD = split.select_attrs_by_dset_ids(test_scaffold, data_obj_scaffold.attr)
@@ -236,6 +247,7 @@ def test_select_attrs_by_dset_ids():
     
 #***********************************************************************************
 
+@pytest.mark.basic
 def test_select_attrs_by_dset_smiles():
     #testing that the method can split a attr according to a disk dataset. In this case, the attr_ids need to be converted back to smiles to match the input dataset.
     dataset = DiskDataset.from_numpy(test_scaffold.X, test_scaffold.y, ids=test_scaffold_attr[data_obj_scaffold.params.smiles_col].values)
@@ -244,6 +256,7 @@ def test_select_attrs_by_dset_smiles():
     assert set(newDD.index.values) == set(test_scaffold_attr.index.values)
 #***********************************************************************************
 
+@pytest.mark.basic
 def test_split_dataset_stratified(caplog):
     #Testing for correct type and length of dataset for trainvalidtest splitting with a random splitter    
     if stratified_fixed:
@@ -260,6 +273,7 @@ def test_split_dataset_stratified(caplog):
         pass
 
 #***********************************************************************************
+@pytest.mark.basic
 def test_split_dataset_index(caplog):
     #Testing for correct type and length of dataset for trainvalidtest splitting with a random splitter     
     ([(train,valid)], test, [(train_attr,valid_attr)],test_attr) = splitter_index.split_dataset(data_obj_index.dataset, data_obj_index.attr, data_obj_index.params.smiles_col)
@@ -278,6 +292,7 @@ def test_split_dataset_index(caplog):
     assert all(test_list)
 
 #***********************************************************************************
+@pytest.mark.basic
 def test_split_dataset_kfold_scaffold(caplog):
     #Testing for correct type and length of dataset for k-fold splitting with a scaffold splitter     
     #Testing a 3-fold split first for uniqueness of all validation and training sets. 
@@ -314,6 +329,7 @@ def test_split_dataset_kfold_scaffold(caplog):
     assert all(test_list)
     
     #***********************************************************************************
+@pytest.mark.basic
 def test_split_dataset_kfold_random(caplog):
     #Testing for correct type and length of dataset for k-fold splitting with a random splitter         
     #Testing a 5-fold split first for uniqueness of all validation and training sets. 

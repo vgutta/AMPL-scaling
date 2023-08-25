@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import os
 import sys
+import pytest
 
 import atomsci.ddm.utils.curate_data as curate_data
 import atomsci.ddm.utils.struct_utils as struct_utils
@@ -30,6 +31,7 @@ def get_raw_data():
     raw_df = pd.read_csv(dset_path)
     return raw_df
 
+@pytest.mark.basic
 def test_remove_outlier_replicates():
     """
     Test outlier removal using curate_data.remove_outlier_replicates
@@ -51,6 +53,7 @@ def test_remove_outlier_replicates():
     print(f"Wrote outlier-filtered data to {filt_file}")
     return filt_df
 
+@pytest.mark.basic
 def test_aggregate_assay_data(filt_df=None):
     """
     Test curate_data.aggregate_assay_data, the preferred function for averaging replicate values over compounds
@@ -69,7 +72,7 @@ def test_aggregate_assay_data(filt_df=None):
     agg_df.to_csv(agg_file, index=False)
     print(f"Wrote aggregated data to {agg_file}")
 
-
+@pytest.mark.basic
 def test_average_and_remove_duplicates():
     """
     Test outlier removal and averaging using deprecated curation function
@@ -92,7 +95,7 @@ def test_average_and_remove_duplicates():
     curated_df.to_csv(curated_file, index=False)
     print(f"Wrote curated data to {curated_file}")
 
-
+@pytest.mark.basic
 def test():
     """
     Test data curation functions

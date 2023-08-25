@@ -4,6 +4,7 @@ import json
 import glob
 import os
 import shutil
+import pytest
 from deepchem.splits import ScaffoldSplitter
 
 from atomsci.ddm.pipeline.MultitaskScaffoldSplit import MultitaskScaffoldSplitter, split_with
@@ -47,6 +48,7 @@ def clean():
     delete_file('twenty_gen_split.csv')
     delete_file('ss_split.csv')
 
+@pytest.mark.basic
 def test_splits():
     clean()
 
@@ -128,6 +130,7 @@ def test_splits():
 
     clean()
 
+@pytest.mark.basic
 def test_pipeline_split_only():
     clean()
     init_data()
@@ -150,6 +153,7 @@ def test_pipeline_split_only():
 
     clean()
 
+@pytest.mark.basic
 def test_pipeline_split_and_train():
     clean()
     init_data()
