@@ -143,7 +143,6 @@ class SplitStats:
         g=sns.histplot(dists, kde=False, stat='probability', ax=ax)
         g.set_xlabel('Tanimoto Distance',fontsize=13)
         g.set_ylabel('Proportion of Compounds',fontsize=13)
-
         return g
 
     def umap_plot(self, dist_path=''):
