@@ -21,6 +21,8 @@ dgllife
 
 xgboost
 
+scikit-learn==1.2.2
+
 bokeh
 matplotlib
 matplotlib-venn
