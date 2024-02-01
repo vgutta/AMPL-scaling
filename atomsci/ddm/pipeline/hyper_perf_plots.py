@@ -15,7 +15,24 @@ colors = ["#7682A4","#A7DDD8","#373C50","#694691","#BE2369","#EB1E23","#6EC8BE",
 # Set your custom color palette
 pal=sns.color_palette(colors)
 sns.set_palette(pal)
+plt.rcParams.update({"figure.dpi": 96})
 
+from atomsci.ddm.pipeline import parameter_parser as pp
+
+# get all possible things to plot from parameter parser
+parser=pp.get_parser()
+d=vars(pp.get_parser().parse_args())
+keywords=['AttentiveFPModel','GCNModel','GraphConvModel','MPNNModel','PytorchMPNNModel','rf_','xgb_']
+plot_dict={}
+for word in keywords:
+    tmplist=[x for x in d.keys() if x.startswith(word)]
+    if word=='rf_': word='RF'
+    elif word=='xgb_':word='xbgoost'
+    plot_dict[word]=tmplist
+plot_dict['general']=['model_type','features','splitter']#'ecfp_radius',
+plot_dict['NN']=['plot_dropout','learning_rate','num_nodes','num_layers','best_epoch','max_epochs']
+
+# list score types
 regselmets=[
  'r2_score',
  'mae_score',
@@ -37,8 +54,8 @@ def get_score_types():
     """
     Helper function to show score type choices.
     """
-    print(classselmets)
-    print(regselmets)
+    print("Classification metrics: ", classselmets)
+    print("Regression metrics: ", regselmets)
 
 def _prep_perf_df(df):
     """
@@ -54,7 +71,6 @@ def _prep_perf_df(df):
         perf_track_df (pd.DataFrame): a new df with modified and extra columns.
     """
     perf_track_df=df.copy()
-    
     if 'NN' in perf_track_df.model_type.unique():
         perf_track_df['plot_dropout'] = perf_track_df.dropouts.astype(str).str.strip('[]').str.split(pat=',',n=1, expand=True)[0]
         perf_track_df['plot_dropout'] = perf_track_df.plot_dropout.astype(float)
@@ -66,6 +82,7 @@ def _prep_perf_df(df):
         perf_track_df['num_layers'] = n-perf_track_df[cols[0:n]].isna().sum(axis=1)
         perf_track_df[cols[0:n]]=perf_track_df[cols[0:n]].fillna(value=1).astype(int)
         perf_track_df['num_nodes']=perf_track_df[cols[0:n]].product(axis=1)
+        perf_track_df.num_nodes=perf_track_df.num_nodes.astype(float)
         perf_track_df=perf_track_df.drop(columns=cols[0:n])
         perf_track_df.loc[perf_track_df.model_type != "NN", 'layer_sizes']=np.nan
         perf_track_df.loc[perf_track_df.model_type != "NN", 'num_layers']=np.nan
@@ -74,9 +91,9 @@ def _prep_perf_df(df):
     
     return perf_track_df
 
-def plot_train_valid_test_scores(df, scoretype='r2_score'):
+def plot_train_valid_test_scores(df, prediction_type='regression'):
     """
-    This function plots kde and line plots of performance scores based on their partitions.
+    This function plots line plots of performance scores based on their partitions.
     
     Args:
         df (pd.DataFrame): A dataframe containing model performances from a 
@@ -86,23 +103,25 @@ def plot_train_valid_test_scores(df, scoretype='r2_score'):
         scoretype (str): the score type you want to use. Valid options can be found in
         hpp.classselmets or hpp.regselmets.  
     """
-    sns.set_context('poster')
+    sns.set_context('notebook')
     perf_track_df=df.copy().reset_index(drop=True)
-    
-    plot_df=perf_track_df[[f"best_train_{scoretype}",f"best_valid_{scoretype}",f"best_test_{scoretype}"]]
-    # turn off sorting if you have a ton of models.. can be slow
-    plot_df=plot_df.sort_values(f"best_valid_{scoretype}")
 
-    fig, ax = plt.subplots(1,2,figsize=(26,8))
-    sns.kdeplot(perf_track_df[f'best_train_{scoretype}'], label="train",ax=ax[0])
-    sns.kdeplot(perf_track_df[f'best_valid_{scoretype}'], label="valid",ax=ax[0])
-    sns.kdeplot(perf_track_df[f'best_test_{scoretype}'], label="test",ax=ax[0])
-    ax[0].set_xlabel(f'{scoretype}s')
+    if prediction_type=='regression':
+        selmets=regselmets
+    elif prediction_type=='classification':
+        selmets=classselmets
 
-    ax[0].legend(loc="upper left")
-    ax[1].plot(plot_df.T);
-    ax[1].set_ylim(plot_df.min().min()-.1,1)
-    fig.suptitle(f"Model performance by partition");
+    with sns.axes_style("ticks"):
+        fig, ax = plt.subplots(1,len(selmets), figsize=(5*len(selmets),5))
+        for i, scoretype in enumerate(selmets):
+            plot_df=perf_track_df[[f"best_train_{scoretype}",f"best_valid_{scoretype}",f"best_test_{scoretype}"]]
+            plot_df=plot_df.sort_values(f"best_valid_{scoretype}")
+            ax[i].plot(plot_df.T);
+            ax[i].set_ylim(plot_df.min().min()-.1,1)
+            ax[i].tick_params(rotation=15)
+            ax[i].set_title(scoretype)
+        fig.suptitle(f"Model performance by partition");
+        plt.tight_layout()
 
     
 ### the following 3 plots are originally from Amanda M.
@@ -122,22 +141,26 @@ def plot_rf_perf(df, scoretype='r2_score',subset='valid'):
     """
     sns.set_context('poster')
     perf_track_df=df.copy().reset_index(drop=True)
-    plot_df=perf_track_df[perf_track_df.model_type=='RF']
+    plot_df=perf_track_df[perf_track_df.model_type=='RF'].copy()
     winnertype= f'best_{subset}_{scoretype}'
     
     if len(plot_df)>0:
-        feat1 = 'rf_max_features'; feat2 = 'rf_max_depth'; feat3 = 'rf_estimators'
+        feat1 = 'rf_estimators'; feat2 = 'rf_max_features'; feat3 = 'rf_max_depth'
+        plot_df[f'{feat1}_cut']=pd.cut(plot_df[feat1], 5, precision=0)
+        plot_df[f'{feat2}_cut']=pd.cut(plot_df[feat2], 5, precision=0)
         hue=feat3
-        
-        plot_df = plot_df.sort_values([feat3, feat1, feat2])
-        plot_df[f'{feat1}/{feat2}'] = ['%s / %s' % (mf,est) for mf,est in zip(plot_df[feat1], plot_df[feat2])]
+        plot_df = plot_df.sort_values([f'{feat1}_cut', f'{feat2}_cut',feat3], ascending=True)
+        plot_df.loc[:,f'{feat1}/{feat2}'] = ['%s / %s' % (mf,est) for mf,est in zip(plot_df[f'{feat1}_cut'], plot_df[f'{feat2}_cut'])]
         with sns.axes_style("whitegrid"):
-            fig = plt.figure(figsize=(40,15))
-            ax1 = fig.add_subplot(111)
-            sns.scatterplot(x=f'{feat1}/{feat2}', y=winnertype, hue=hue, palette=sns.cubehelix_palette(len(plot_df[hue].unique())), data=plot_df, ax=ax1)
-            plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+            fig,ax = plt.subplots(1,figsize=(40,15))
+            if plot_df[hue].nunique()<13:
+                palette=sns.cubehelix_palette(plot_df[hue].nunique())
+            else:
+                palette=sns.cubehelix_palette(as_cmap=True)
+            sns.scatterplot(x=f'{feat1}/{feat2}', y=winnertype, hue=hue, palette=palette, data=plot_df, ax=ax)
+            sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1))
             plt.xticks(rotation=30, ha='right')
-            plt.title(f'RF model performance');
+            ax.set_title(f'RF model performance');
     else: print("There are no RF models in this set.")
 
         
@@ -151,29 +174,44 @@ def plot_nn_perf(df, scoretype='r2_score',subset='valid'):
         get_filesystem_perf_results().
         
         scoretype (str): the score type you want to use. Valid options can be found in
-        hpp.classselmets or hpp.regselmets.
+        hpp.get_score_types().
         
         subset (str): the subset of scores you'd like to plot from 'train', 'valid' and 'test'.
     """
     sns.set_context('poster')
     perf_track_df=_prep_perf_df(df).reset_index(drop=True)
-    plot_df=perf_track_df[perf_track_df.model_type=='NN']
+    plot_df=perf_track_df[perf_track_df.model_type=='NN'].copy()
     winnertype= f'best_{subset}_{scoretype}'
     
     if len(plot_df)>0:
-        feat1 = 'learning_rate'; feat2 = 'plot_dropout'; feat3 = 'layer_sizes'
+        feat1 = 'num_nodes'; feat2 = 'learning_rate'; feat3 = 'plot_dropout'
+        plot_df[f'{feat1}_cut']=pd.cut(plot_df[feat1],5)
+        plot_df[f'{feat2}_cut']=pd.cut(plot_df[feat2],5)
+        plot_df = plot_df.sort_values([f'{feat1}_cut', f'{feat2}_cut',feat3], ascending=True)
+        for feat in [feat1,feat2]:
+            bins=['{:.2e}'.format(x) for x in pd.cut(plot_df[feat],5,retbins=True)[1]]
+            binstrings=[]
+            for i,bin in enumerate(bins):
+                try:binstrings.append(f'({bin}, {bins[i+1]}]')
+                except:pass
+            nncmap=dict(zip(plot_df[f'{feat}_cut'].dtype.categories.tolist(),binstrings))
+            plot_df[f'{feat}_cut']=plot_df[f'{feat}_cut'].map(nncmap)
         hue=feat3
-        plot_df = plot_df.sort_values([feat3, feat1, feat2])
-        plot_df[f'{feat1}/{feat2}'] = ['%s / %s' % (mf,est) for mf,est in zip(plot_df[feat1], plot_df[feat2])]
+        plot_df[f'{feat1}/{feat2}'] = ['%s / %s' % (mf,est) for mf,est in zip(plot_df[f'{feat1}_cut'], plot_df[f'{feat2}_cut'])]
         with sns.axes_style("whitegrid"):
-            fig = plt.figure(figsize=(40,15))
-            ax1 = fig.add_subplot(111)
-            sns.scatterplot(x=f'{feat1}/{feat2}', y=winnertype, hue=hue, palette=sns.cubehelix_palette(len(plot_df[hue].unique())), data=plot_df, ax=ax1)
-            plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+            fig,ax = plt.subplots(1,figsize=(40,15))
+            if plot_df[hue].nunique()<13:
+                palette=sns.cubehelix_palette(plot_df[hue].nunique())
+            else:
+                palette=sns.cubehelix_palette(as_cmap=True)
+            sns.scatterplot(x=f'{feat1}/{feat2}', y=winnertype, hue=hue,
+                            palette=palette, 
+                            data=plot_df, ax=ax)
+            sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1))
             plt.xticks(rotation=30, ha='right')
-            plt.title(f'NN model performance');
+            ax.set_title(f'NN model performance');
     else: print("There are no NN models in this set.")
-
+    return plot_df
         
 def plot_xg_perf(df, scoretype='r2_score',subset='valid'):
     """
@@ -199,17 +237,63 @@ def plot_xg_perf(df, scoretype='r2_score',subset='valid'):
         plot_df = plot_df.sort_values([feat1, feat2])
         #plot_df[f'{feat1}/{feat2}'] = ['%s / %s' % (mf,est) for mf,est in zip(plot_df[feat1], plot_df[feat2])]
         with sns.axes_style("whitegrid"):
-            fig = plt.figure(figsize=(40,15))
-            ax1 = fig.add_subplot(111)
-            sns.scatterplot(x=feat1, y=winnertype, 
-                            hue=hue, palette=sns.cubehelix_palette(len(plot_df[hue].unique())), 
-                            data=plot_df, ax=ax1)
-            plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+            fig,ax = plt.subplots(1,figsize=(40,15))
+            if plot_df[hue].nunique()<13:
+                # palette=sns.cubehelix_palette(plot_df[hue].nunique())
+                sns.scatterplot(x=feat1, y=winnertype, hue=hue, data=plot_df, ax=ax1)
+            else:
+                palette=sns.cubehelix_palette()
+                sns.scatterplot(x=feat1, y=winnertype, hue=hue, 
+                                palette=palette, 
+                                data=plot_df, ax=ax1)
+            sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1))
             plt.xticks(rotation=30, ha='right')
-            plt.title(f'XGboost model performance');
+            ax.set_title(f'XGboost model performance');
     else: print('There are no XGBoost models in this set.')
 
+def plot_hyper_perf(df, scoretype='r2_score', subset='valid', model_type='general'):
+    """
+    This function plots boxplots or scatter plots of performance scores based on their hyperparameters.
+    
+    Args:
+        df (pd.DataFrame): A dataframe containing model performances from a 
+        hyperparameter search. Best practice is to use get_multitask_perf_from_tracker() or 
+        get_filesystem_perf_results().
         
+        scoretype (str): the score type you want to use. Valid options can be found in
+        hpp.classselmets or hpp.regselmets.
+        
+        subset (str): the subset of scores you'd like to plot from 'train', 'valid' and 'test'.
+
+        model_type (str): the type of model you want to visualize. Options include 'general' (features and splits), 'RF', 'NN', 'xgboost', and limited functionality for 'AttentiveFPModel', 'GCNModel', 'GraphConvModel', 'MPNNModel', and 'PytorchMPNNModel'.
+    """
+
+    sns.set_context('notebook')
+    perf_track_df=_prep_perf_df(df).reset_index(drop=True)
+    winnertype= f'best_{subset}_{scoretype}'
+
+    feats=plot_dict[model_type]
+    ncols=3
+    nrows=int(np.ceil(len(feats)/ncols))
+
+    helix_dict={'NN':(0,0.40),'RF':(0,2.00),'xgboost':(0,2.75),'general':(60,0.2)}
+    
+    fig, ax = plt.subplots(nrows,ncols,figsize=(ncols*4,nrows*4))
+    ax=ax.ravel()
+    for i, feat in enumerate(feats):
+        try: rot,start=helix_dict[model_type]
+        except: rot,start=(-0.2,0)
+        if feat in perf_track_df.columns:    
+            if perf_track_df[feat].nunique()>12:
+                sns.scatterplot(x=feat, y=winnertype, data=perf_track_df, ax=ax[i])
+            else:       
+                sns.boxplot(x=feat,y=winnertype,palette=sns.cubehelix_palette(perf_track_df[feat].nunique(), rot=rot,start=start,), data=perf_track_df, ax=ax[i])
+        ax[i].tick_params(axis='x', rotation=30)
+        ax[i].set_xlabel(feat)
+    fig.suptitle(f'{model_type} hyperparameter performance')
+    plt.tight_layout()
+    return perf_track_df
+
 def plot_rf_nn_xg_perf(df, scoretype='r2_score',subset='valid'):
     """
     This function plots boxplots of performance scores based on their hyperparameters including
@@ -225,7 +309,7 @@ def plot_rf_nn_xg_perf(df, scoretype='r2_score',subset='valid'):
         
         subset (str): the subset of scores you'd like to plot from 'train', 'valid' and 'test'.
     """
-    sns.set_context('paper')
+    sns.set_context('notebook')
     perf_track_df=_prep_perf_df(df).reset_index(drop=True)
     winnertype= f'best_{subset}_{scoretype}'
     
@@ -255,8 +339,8 @@ def plot_rf_nn_xg_perf(df, scoretype='r2_score',subset='valid'):
         sns.boxplot(x=plotdf2.loc[~plotdf2[feat6].isna(),feat6].astype(int), y=winnertype, palette=sns.cubehelix_palette(len(plotdf2[feat6].unique()), rot=0, start=2.00), data=plotdf2,    ax=ax[2,2]); ax[2,2].tick_params(rotation=0); ax[2,2].set_xlabel('RF max features per node')#ax[2,2].legend(bbox_to_anchor=(1,1), title=feat3);
     #general
     plotdf2=plotdf2.sort_values(feat10)
-    sns.boxplot(x=feat10, y=winnertype, palette=sns.cubehelix_palette(len(plotdf2[feat10].unique()), rot=60, start=0.20), data=plotdf2,  ax=ax[3,0]); ax[3,0].tick_params(rotation=0);  ax[3,0].set_xlabel('Featurization type');ax[3,0].set_xticklabels( ax[3,0].get_xticklabels(), rotation=30, ha='right', rotation_mode='anchor' )#ax[2,0].legend_.remove(); 
     sns.boxplot(x=feat11, y=winnertype, palette=sns.cubehelix_palette(len(plotdf2[feat11].unique()), rot=60, start=0.20), data=plotdf2,  ax=ax[3,1]); ax[3,1].tick_params(rotation=0);  ax[3,1].set_xlabel('Model type')#ax[2,1].legend_.remove(); ax[2,1].title.set_text(f"Hyperparameters colored by {feat3}")
+    sns.boxplot(x=feat10, y=winnertype, palette=sns.cubehelix_palette(len(plotdf2[feat10].unique()), rot=60, start=0.20), data=plotdf2,  ax=ax[3,0]); ax[3,0].tick_params(rotation=0);  ax[3,0].set_xlabel('Featurization type');ax[3,0].set_xticklabels( ax[3,0].get_xticklabels(), rotation=30, ha='right', rotation_mode='anchor' )#ax[2,0].legend_.remove(); 
     if 'ecfp_radius' in perf_track_df.columns:
         sns.boxplot(x=feat13, y=winnertype, palette=sns.cubehelix_palette(len(plotdf2[feat13].unique()), rot=60, start=0.20), data=plotdf2,  ax=ax[3,2])
     ax[3,2].tick_params(rotation=0);  ax[3,2].set_xlabel('ECFP radius')#ax[2,1].legend_.remove(); ax[2,1].title.set_text(f"Hyperparameters colored by {feat3}")
@@ -280,8 +364,7 @@ def plot_split_perf(df, scoretype='r2_score',subset='valid'):
         
         subset (str): the subset of scores you'd like to plot from 'train', 'valid' and 'test'.
     """
-    sns.set_style("ticks")
-    sns.set_context("paper")    
+    sns.set_context("notebook")    
     perf_track_df=_prep_perf_df(df).reset_index(drop=True)
     winnertype= f'best_{subset}_{scoretype}'
 
@@ -292,14 +375,24 @@ def plot_split_perf(df, scoretype='r2_score',subset='valid'):
         
     plot_df=perf_track_df
     plot_df=plot_df.sort_values('features')
-    fig, axes = plt.subplots(1,len(selmets), figsize=(5*len(selmets),5))
-    for i, ax in enumerate(axes.flat):
-        selection_metric = f'best_{subset}_{selmets[i]}'
-        g=sns.boxplot(x="features", y=selection_metric, # x="txptr_features" x="model_type"
-                    hue='splitter', palette = sns.color_palette(colors), #showfliers=False, 
-                    data=plot_df, ax=ax);
-        g.set_xlabel('')
-        g.set_ylabel(selection_metric.replace('best_valid_',''))
-        g.set_xticklabels( g.get_xticklabels(), rotation=30, ha='right', rotation_mode='anchor' )
-    plt.tight_layout()
-    fig.suptitle('Effect of splitter on model performance', y=1.01)
+    with sns.axes_style("ticks"):
+        fig, axes = plt.subplots(1,len(selmets), figsize=(5*len(selmets),5))
+        for i, ax in enumerate(axes.flat):
+            if i==len(axes.flat)-1:
+                legend=True
+            else:
+                legend=False
+            selection_metric = f'best_{subset}_{selmets[i]}'
+            sns.boxplot(x="features", y=selection_metric, # x="txptr_features" x="model_type"
+                        hue='splitter', palette = sns.color_palette(colors[0:plot_df.features.nunique()]), #showfliers=False, 
+                          legend=legend,
+                        data=plot_df, ax=ax);
+            ax.set_xlabel('')
+            ax.set_ylabel(selection_metric.replace(f'best_{subset}_',''))
+            ax.set_xticks(ax.get_xticks()) # avoid warning by including this line
+            ax.set_xticklabels(ax.get_xticklabels(), rotation=30, ha='right', rotation_mode='anchor' )
+            ax.set_title(selection_metric.replace(f'best_{subset}_',''))
+            if legend: sns.move_legend(ax, loc=(1.01,0.5))
+        plt.tight_layout()
+        fig.suptitle('Effect of splitter on model performance', y=1.01)
+        
