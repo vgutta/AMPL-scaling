@@ -1028,7 +1028,7 @@ def get_filesystem_perf_results(result_dir, pred_type='classification'):
     sort_by = 'model_choice_score'
     perf_df = perf_df.sort_values(sort_by, ascending=False)
     
-    logger.warn('Warning: column names have been changed to align with get_multitask_perf_from_tracker(): featurizer is now features and <subset>_<metric> has been changed to best_<subset>_<metric>.')
+    # logger.warn('Warning: column names have been changed to align with get_multitask_perf_from_tracker(): featurizer is now features and <subset>_<metric> has been changed to best_<subset>_<metric>.')
     return perf_df
 
 def get_filesystem_models(result_dir, pred_type):
