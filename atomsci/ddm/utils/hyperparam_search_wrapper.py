@@ -1646,14 +1646,17 @@ class HyperOptSearch():
                 trial_data[f"{subset}_acc"] = [trials.trials[i]["result"][f"{subset}_acc"] for i in range(len(trials.trials))]
         perf = pd.DataFrame(trial_data)
 
-        if self.params.prediction_type == "regression":
-            best_trial = perf.sort_values(by="valid_r2", ascending=False)["trial"].iloc[0]
-            best_model = trials.trials[best_trial]["result"]["model"]
-            print(f'Best model: {best_model}, valid R2: {perf.sort_values(by="valid_r2", ascending=False)["valid_r2"].iloc[0]}')
-        else:
-            best_trial = perf.sort_values(by="valid_roc_auc", ascending=False)["trial"].iloc[0]
-            best_model = trials.trials[best_trial]["result"]["model"]
-            print(f'Best model: {best_model}, valid ROC_AUC: {perf.sort_values(by="valid_roc_auc", ascending=False)["valid_roc_auc"].iloc[0]}')
+        best_trial = perf.sort_values(by=f'valid_{self.params.model_choice_score_type}', ascending=False)['trial'].iloc[0]
+        best_model = trials.trials[best_trial]["result"]["model"]
+        print(f'Best model: {best_model}, valid_{self.params.model_choice_score_type}_score: {perf.sort_values(by=f"valid_{self.params.model_choice_score_type}", ascending=False)[f"valid_{self.params.model_choice_score_type}"].iloc[0]}')
+        # if self.params.prediction_type == "regression":
+        #     best_trial = perf.sort_values(by="valid_r2", ascending=False)["trial"].iloc[0]
+        #     best_model = trials.trials[best_trial]["result"]["model"]
+        #     print(f'Best model: {best_model}, valid R2: {perf.sort_values(by="valid_r2", ascending=False)["valid_r2"].iloc[0]}')
+        # else:
+        #     best_trial = perf.sort_values(by="valid_roc_auc", ascending=False)["trial"].iloc[0]
+        #     best_model = trials.trials[best_trial]["result"]["model"]
+        #     print(f'Best model: {best_model}, valid ROC_AUC: {perf.sort_values(by="valid_roc_auc", ascending=False)["valid_roc_auc"].iloc[0]}')
 
         bmodel_prefix = "_".join(os.path.basename(best_model).split("_")[:-1])
         bmodel_uuid = os.path.basename(best_model).split(".")[0].split("_")[-1]
