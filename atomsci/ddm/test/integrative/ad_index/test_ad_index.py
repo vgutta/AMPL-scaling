@@ -25,9 +25,7 @@ def clean():
 
 @pytest.mark.basic
 def test():
-    """
-    Test full model pipeline: Curate data, fit model, and predict property for new compounds
-    """
+    """Test full model pipeline: Curate data, fit model, and predict property for new compounds"""
 
     # Clean
     # -----

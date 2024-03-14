@@ -17,9 +17,7 @@ import integrative_utilities
 
 
 def clean():
-    """
-    Clean test files
-    """
+    """Clean test files"""
     for f in ['delaney-processed_curated.csv',
               'delaney-processed_curated_fit.csv',
               'delaney-processed_curated_external.csv',
@@ -29,9 +27,7 @@ def clean():
 
 
 def curate():
-    """
-    Curate dataset for model fitting
-    """
+    """Curate dataset for model fitting"""
     if (not os.path.isfile('delaney-processed_curated.csv') and
             not os.path.isfile('delaney-processed_curated_fit.csv') and
             not os.path.isfile('delaney-processed_curated_external.csv')):
@@ -70,9 +66,7 @@ def curate():
 
 
 def download():
-    """
-    Separate download function so that download can be run separately if there is no internet.
-    """
+    """Separate download function so that download can be run separately if there is no internet."""
     if (not os.path.isfile('delaney-processed.csv')):
         integrative_utilities.download_save(
             'https://deepchemdata.s3-us-west-1.amazonaws.com/datasets/delaney-processed.csv',
@@ -82,9 +76,7 @@ def download():
 
 @pytest.mark.basic
 def test():
-    """
-    Test full model pipeline: Curate data, fit model, and predict property for new compounds
-    """
+    """Test full model pipeline: Curate data, fit model, and predict property for new compounds"""
 
     # Clean
     # -----

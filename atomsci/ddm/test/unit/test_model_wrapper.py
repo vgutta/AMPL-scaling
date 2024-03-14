@@ -102,8 +102,7 @@ MultitaskDCModelWrapper, DCRFModelWrapper
 #***********************************************************************************
 @pytest.mark.basic
 def test_super_create_transformers():
-    """
-    Args:
+    """Args:
     model_dataset: The ModelDataset object that handles the current dataset
 
     Returns:
@@ -122,7 +121,7 @@ def test_super_create_transformers():
     model_dataset.get_dataset_tasks
     model_dataset.check_task_columns
     model_dataset.get_featurized_data
-    Requires (self.params.prediction_type == 'regression' and self.params.transformers == True) or len(self.transformers) > 0 
+    Requires (self.params.prediction_type == 'regression' and self.params.transformers == True) or len(self.transformers) > 0
 
     Calls:
     self.featurization.create_feature_transformer
@@ -165,8 +164,7 @@ def test_super_create_transformers():
 #***********************************************************************************
 @pytest.mark.basic
 def test_super_transform_dataset():
-    """
-    Args:
+    """Args:
     dataset: The DeepChem DiskDataset that contains a dataset
 
     Returns:
@@ -180,7 +178,6 @@ def test_super_transform_dataset():
 
     Calls:
     None
-
 
     """
     #set up for a model wrapper with regression and NN.
@@ -288,11 +285,9 @@ def test_super_transform_dataset():
 #***********************************************************************************
 @pytest.mark.basic
 def test_train_NN_graphconv_scaffold_inputs():
-    """
-
-    Args:
+    """Args:
     pipeline (ModelPipeline): The ModelPipeline instance for this model run.
-    
+
     Dependencies:
     ModelPipeline creation
     featurization creation
@@ -332,8 +327,7 @@ def test_train_NN_graphconv_scaffold_inputs():
     #***********************************************************************************
     @pytest.mark.basic
     def test_super_get_train_valid_pred_results():
-        """
-        Args:
+        """Args:
         perf_data: A PerfData object that stores the predicted values and metrics
         Returns:
         dict: A dictionary of the prediction results
@@ -355,8 +349,7 @@ def test_train_NN_graphconv_scaffold_inputs():
     #***********************************************************************************
     @pytest.mark.basic
     def test_super_get_test_perf_data():
-        """
-        Args:
+        """Args:
         model_dir (str): Directory where the saved model is stored
         model_dataset (DiskDataset): Stores the current dataset and related methods
 
@@ -381,8 +374,7 @@ def test_train_NN_graphconv_scaffold_inputs():
     #***********************************************************************************
     @pytest.mark.basic
     def test_super_get_test_pred_results():
-        """
-        Args:
+        """Args:
         model_dir (str): Directory where the saved model is stored
         model_dataset (DiskDataset): Stores the current dataset and related methods
 
@@ -406,8 +398,7 @@ def test_train_NN_graphconv_scaffold_inputs():
     #***********************************************************************************
     @pytest.mark.basic
     def test_super_get_full_dataset_perf_data():
-        """
-        Args:
+        """Args:
         model_dataset (DiskDataset): Stores the current dataset and related methods
 
         Returns:
@@ -429,8 +420,7 @@ def test_train_NN_graphconv_scaffold_inputs():
     #***********************************************************************************
     @pytest.mark.basic
     def test_super_get_full_dataset_pred_results():
-        """
-        Args:
+        """Args:
         model_dataset (DiskDataset): Stores the current dataset and related methods
         Returns:
         dict: A dictionary containing predicted values and metrics for the current full dataset

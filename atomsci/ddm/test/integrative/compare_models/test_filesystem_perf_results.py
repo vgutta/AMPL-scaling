@@ -45,11 +45,10 @@ def get_tar_metadata(model_tarball):
     return meta_json
 
 def confirm_perf_table(json_f, df):
-    '''
-    df should contain one entry for the model specified by json_f
+    """df should contain one entry for the model specified by json_f
 
     checks to see if the parameters extracted match what's in config
-    '''
+    """
     # should only have trained one model
     assert len(df) == 1
     # the one row
@@ -81,8 +80,7 @@ def confirm_perf_table(json_f, df):
         assert row['learning_rate'] == float(pparams.learning_rate)
 
 def compare_dictionaries(ref, model_info):
-    '''
-    Args:
+    """Args:
         ref: this is the hardcoded reference dictionary. Everything in this
             dictionary must appear in output and they must be exactly the same or,
             if it's a numeric value, must be within 1e-6.
@@ -91,7 +89,7 @@ def compare_dictionaries(ref, model_info):
 
     Returns:
         None
-    '''
+    """
     for k, v in ref.items():
         if not v  == v:
             # in the case of nan

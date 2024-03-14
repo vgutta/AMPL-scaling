@@ -23,9 +23,7 @@ def clean():
             os.remove(f)
 
 def get_raw_data():
-    """
-    Returns data frame for dataset to be used to test curation functions
-    """
+    """Returns data frame for dataset to be used to test curation functions"""
     dset_path = os.path.realpath(os.path.join(script_path, 
         '../../test_datasets/pGP_MDCK_efflux_ratio_chembl29.csv'))
     raw_df = pd.read_csv(dset_path)
@@ -33,9 +31,7 @@ def get_raw_data():
 
 @pytest.mark.basic
 def test_remove_outlier_replicates():
-    """
-    Test outlier removal using curate_data.remove_outlier_replicates
-    """
+    """Test outlier removal using curate_data.remove_outlier_replicates"""
     raw_df = get_raw_data()
     print(f"Raw data has {len(raw_df)} rows, {len(set(raw_df.base_rdkit_smiles.values))} unique compounds")
     filt_df = curate_data.remove_outlier_replicates(raw_df, response_col='log_efflux_ratio', id_col='base_rdkit_smiles',
@@ -55,9 +51,7 @@ def test_remove_outlier_replicates():
 
 @pytest.mark.basic
 def test_aggregate_assay_data(filt_df=None):
-    """
-    Test curate_data.aggregate_assay_data, the preferred function for averaging replicate values over compounds
-    """
+    """Test curate_data.aggregate_assay_data, the preferred function for averaging replicate values over compounds"""
     if filt_df is None:
         filt_df = test_remove_outlier_replicates()
     agg_df = curate_data.aggregate_assay_data(filt_df, value_col='log_efflux_ratio', label_actives=False,
@@ -74,9 +68,7 @@ def test_aggregate_assay_data(filt_df=None):
 
 @pytest.mark.basic
 def test_average_and_remove_duplicates():
-    """
-    Test outlier removal and averaging using deprecated curation function
-    """
+    """Test outlier removal and averaging using deprecated curation function"""
     raw_df = get_raw_data()
 
     # tolerance: In each iteration, remove replicate measurements that differ from their mean by more than this percentage of the mean
@@ -97,9 +89,7 @@ def test_average_and_remove_duplicates():
 
 @pytest.mark.basic
 def test():
-    """
-    Test data curation functions
-    """
+    """Test data curation functions"""
 
     # Clean up old files
     clean()

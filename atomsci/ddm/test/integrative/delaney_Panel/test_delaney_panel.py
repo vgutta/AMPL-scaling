@@ -19,9 +19,7 @@ import integrative_utilities
 
 
 def clean(prefix='delaney-processed'):
-    """
-    Clean test files
-    """
+    """Clean test files"""
     for f in ['%s_curated.csv'%prefix,
               '%s_curated_fit.csv'%prefix,
               '%s_curated_external.csv'%prefix,
@@ -30,9 +28,7 @@ def clean(prefix='delaney-processed'):
             os.remove(f)
 
 def curate():
-    """
-    Curate dataset for model fitting
-    """
+    """Curate dataset for model fitting"""
     if (not os.path.isfile('delaney-processed_curated.csv') and
             not os.path.isfile('delaney-processed_curated_fit.csv') and
             not os.path.isfile('delaney-processed_curated_external.csv')):
@@ -80,9 +76,7 @@ def curate():
     assert (os.path.isfile('delaney-processed_curated_external.csv'))
 
 def H1_curate():
-    """
-    Curate dataset for model fitting
-    """
+    """Curate dataset for model fitting"""
     if (not os.path.isfile('H1_curated.csv') and
             not os.path.isfile('H1_curated_fit.csv') and
             not os.path.isfile('H1_curated_external.csv')):
@@ -116,18 +110,15 @@ def H1_curate():
     assert (os.path.isfile('H1_curated_fit_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv'))
 
 def duplicate_df(original, id_col):
-    '''
-    Copies all rows in the original and appends _dupe to the ids
+    """Copies all rows in the original and appends _dupe to the ids
     Returns a dataframe with each row duplicated once
-    '''
+    """
     second_df = original.copy()
     second_df[id_col] = second_df[id_col].apply(lambda x: x+'_dupe')
     return pd.concat([original, second_df])
 
 def H1_double_curate():
-    """
-    Curate dataset for model fitting
-    """
+    """Curate dataset for model fitting"""
     if (not os.path.isfile('H1_double_curated.csv') and
             not os.path.isfile('H1_double_curated_fit.csv') and
             not os.path.isfile('H1_double_curated_external.csv')):
@@ -166,9 +157,7 @@ def H1_double_curate():
 
 
 def download():
-    """
-    Separate download function so that download can be run separately if there is no internet.
-    """
+    """Separate download function so that download can be run separately if there is no internet."""
     if (not os.path.isfile('delaney-processed.csv')):
         integrative_utilities.download_save(
             'https://deepchemdata.s3-us-west-1.amazonaws.com/datasets/delaney-processed.csv',
@@ -250,9 +239,7 @@ def train_and_predict(train_json_f, prefix='delaney-processed'):
             and os.path.getsize(pred_csv_name) > 0), 'Error: Prediction file not created'
 
 def init():
-    """
-    Test full model pipeline: Curate data, fit model, and predict property for new compounds
-    """
+    """Test full model pipeline: Curate data, fit model, and predict property for new compounds"""
 
     # Clean
     # -----
@@ -268,9 +255,7 @@ def init():
     curate()
 
 def H1_init():
-    """
-    Test full model pipeline: Curate data, fit model, and predict property for new compounds
-    """
+    """Test full model pipeline: Curate data, fit model, and predict property for new compounds"""
 
     # Clean
     # -----
@@ -282,9 +267,7 @@ def H1_init():
     H1_curate()
 
 def H1_double_init():
-    """
-    Test full model pipeline: Curate data, fit model, and predict property for new compounds
-    """
+    """Test full model pipeline: Curate data, fit model, and predict property for new compounds"""
 
     # Clean
     # -----

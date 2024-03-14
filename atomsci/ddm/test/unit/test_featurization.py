@@ -83,7 +83,7 @@ def test_create_featurization_dynamicfeaturization():
 #***********************************************************************************    
 @pytest.mark.basic
 def test_get_feature_columns_dynamicfeaturization():
-    """ Testing that dynamic featurization is pulling out the correct number of features and 'column names'. Also technically testing get_feature_count"""
+    """Testing that dynamic featurization is pulling out the correct number of features and 'column names'. Also technically testing get_feature_count"""
     test = []
     cols = featurizer_ecfp.get_feature_columns()
     test.append(len(cols) == delaney_params_ecfp.ecfp_size)
@@ -146,13 +146,13 @@ def test_get_feature_columns_dynamicfeaturization():
 #***********************************************************************************
 @pytest.mark.basic
 def test_get_featurized_dset_name_dynamicfeaturization():
-    """Dynamic featurization does not support get_featurized_dset_name """
+    """Dynamic featurization does not support get_featurized_dset_name"""
     with pytest.raises(Exception):
         featurizer_ecfp.get_featurized_dset_name(data_obj_ecfp.dataset_name)
 #***********************************************************************************
 @pytest.mark.basic
 def test_get_featurized_data_subdir_dynamicfeaturization():
-    """Dynamic featurization does not support get_featurized_data_subdir """
+    """Dynamic featurization does not support get_featurized_data_subdir"""
     with pytest.raises(Exception):
         featurizer_ecfp.get_featurized_data_subdir()
 #***********************************************************************************
