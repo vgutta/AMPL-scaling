@@ -3,23 +3,24 @@ import logging
 import time
 from argparse import Namespace
 from atomsci.ddm.utils import llnl_utils
-import pytest 
+import pytest
+
 
 @pytest.mark.slurm_required
-@pytest.mark.excluded_outside_llnl
+@pytest.mark.llnl_only
 def test_LCTimerIterator_too_long():
     if not llnl_utils.is_lc_system():
         assert True
         return
-    
+
     # make fake parameters
     params = Namespace(max_epochs=100, slurm_time_limit=3)
 
     # make a logger
-    log = logging.getLogger('ATOM')
+    log = logging.getLogger("ATOM")
 
     # make a fake pipeline
-    pipeline = Namespace(start_time = time.time())
+    pipeline = Namespace(start_time=time.time())
 
     lcit = mw.LCTimerIterator(params, pipeline, log)
     for ei in lcit:
@@ -28,8 +29,8 @@ def test_LCTimerIterator_too_long():
         # in at most 18 iterations
         time.sleep(10)
 
-
     assert params.max_epochs <= 18
+
 
 @pytest.mark.basic
 def test_LCTimerIterator_finishes_all_epochs():
@@ -37,10 +38,10 @@ def test_LCTimerIterator_finishes_all_epochs():
     params = Namespace(max_epochs=10, slurm_time_limit=60)
 
     # make a logger
-    log = logging.getLogger('ATOM')
+    log = logging.getLogger("ATOM")
 
     # make a fake pipeline
-    pipeline = Namespace(start_time = time.time())
+    pipeline = Namespace(start_time=time.time())
 
     lcit = mw.LCTimerIterator(params, pipeline, log)
     for ei in lcit:
@@ -50,8 +51,9 @@ def test_LCTimerIterator_finishes_all_epochs():
 
     assert params.max_epochs == 10
 
+
 @pytest.mark.slurm_required
-@pytest.mark.excluded_outside_llnl
+@pytest.mark.llnl_only
 def test_LCTimerKFoldIterator_too_long():
     if not llnl_utils.is_lc_system():
         assert True
@@ -61,10 +63,10 @@ def test_LCTimerKFoldIterator_too_long():
     params = Namespace(max_epochs=100, slurm_time_limit=3)
 
     # make a logger
-    log = logging.getLogger('ATOM')
+    log = logging.getLogger("ATOM")
 
     # make a fake pipeline
-    pipeline = Namespace(start_time = time.time())
+    pipeline = Namespace(start_time=time.time())
 
     lcit = mw.LCTimerKFoldIterator(params, pipeline, log)
 
@@ -76,16 +78,17 @@ def test_LCTimerKFoldIterator_too_long():
 
     assert params.max_epochs <= 18
 
+
 @pytest.mark.basic
 def test_LCTimerKFoldIterator_finishes_all_epochs():
     # make fake parameters
     params = Namespace(max_epochs=10, slurm_time_limit=60)
 
     # make a logger
-    log = logging.getLogger('ATOM')
+    log = logging.getLogger("ATOM")
 
     # make a fake pipeline
-    pipeline = Namespace(start_time = time.time())
+    pipeline = Namespace(start_time=time.time())
 
     lcit = mw.LCTimerKFoldIterator(params, pipeline, log)
     for ei in lcit:
@@ -95,7 +98,8 @@ def test_LCTimerKFoldIterator_finishes_all_epochs():
 
     assert params.max_epochs == 10
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     test_LCTimerIterator_too_long()
     test_LCTimerIterator_finishes_all_epochs()
     test_LCTimerKFoldIterator_too_long()

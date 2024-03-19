@@ -14,16 +14,18 @@ from atomsci.ddm.utils import llnl_utils
 from sklearn.metrics import r2_score
 import pytest
 
+
 def clean():
     """Clean test files"""
     if "output" not in os.listdir():
         os.mkdir("output")
     for f in os.listdir("./output"):
-        if os.path.isfile("./output/"+f):
-            os.remove("./output/"+f)
+        if os.path.isfile("./output/" + f):
+            os.remove("./output/" + f)
+
 
 @pytest.mark.moe_required
-@pytest.mark.excluded_outside_llnl
+@pytest.mark.llnl_only
 def test():
     """Test full model pipeline: Curate data, fit model, and predict property for new compounds"""
 
@@ -34,7 +36,7 @@ def test():
     if not llnl_utils.is_lc_system():
         assert True
         return
-    
+
     # Clean
     # -----
     clean()
@@ -64,16 +66,19 @@ def test():
     pred_results = pred_data.get_prediction_results()
     print(pred_results)
 
-    pred_score = pred_results['r2_score']
+    pred_score = pred_results["r2_score"]
     score_threshold = 0.4
-    assert pred_score > score_threshold, \
-        f'Error: Score is too low {pred_score}. Must be higher than {score_threshold}'
+    assert (
+        pred_score > score_threshold
+    ), f"Error: Score is too low {pred_score}. Must be higher than {score_threshold}"
 
     print("Make predictions with the hyrid model")
-    predict= pl.predict_on_dataframe(train_df[:10], contains_responses=False)
-    assert (predict['pred'].shape[0] == 10), 'Error: Incorrect number of predictions'
-    assert (np.all(np.isfinite(predict['pred'].values))), 'Error: Predictions are not numbers'
+    predict = pl.predict_on_dataframe(train_df[:10], contains_responses=False)
+    assert predict["pred"].shape[0] == 10, "Error: Incorrect number of predictions"
+    assert np.all(
+        np.isfinite(predict["pred"].values)
+    ), "Error: Predictions are not numbers"
 
-    
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     test()
