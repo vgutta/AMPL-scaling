@@ -91,7 +91,10 @@ def plot_pred_vs_actual(model, epoch_label='best', threshold=None, error_bars=Fa
     num_tasks = len(tasks)
     if model.params.model_type != "hybrid":
         fig, axes = plt.subplots(num_tasks, num_ss, figsize=(plot_size*num_ss, plot_size*num_tasks))
-        suptitle = f"{dataset_name}  {splitter} split {model_type} model on {featurizer}, predicted vs actual values"
+        if num_ss > 1:
+            suptitle = f"{dataset_name}  {splitter} {params.split_strategy} split {model_type} model on {featurizer} features, predicted vs actual values by split subset"
+        else:
+            suptitle = f"{model_type} model on {featurizer} features, predicted vs actual values on dataset {dataset_name}"
         fig.suptitle(suptitle, y=0.95)
         axes = axes.flatten()
         for t, resp in enumerate(tasks):
@@ -99,6 +102,8 @@ def plot_pred_vs_actual(model, epoch_label='best', threshold=None, error_bars=Fa
                 perf_data = wrapper.get_perf_data(subset, epoch_label)
                 pred_results = perf_data.get_prediction_results()
                 y_actual = perf_data.get_real_values()
+                y_weights = perf_data.get_weights()
+                y_actual=np.where(y_weights==0, np.nan, y_actual)
                 ids, y_pred, y_std = perf_data.get_pred_values()
                 r2 = pred_results['r2_score']
                 if perf_data.num_tasks > 1:
@@ -107,8 +112,8 @@ def plot_pred_vs_actual(model, epoch_label='best', threshold=None, error_bars=Fa
                     r2_scores = [r2]
                 ax_ind = num_ss*t + s
                 ax = axes[ax_ind]
-                ymin = min(min(y_actual[:,t]), min(y_pred[:,t]))
-                ymax = max(max(y_actual[:,t]), max(y_pred[:,t]))
+                ymin = min(np.nanmin(y_actual[:,t]), np.nanmin(y_pred[:,t]))
+                ymax = max(np.nanmax(y_actual[:,t]), np.nanmax(y_pred[:,t]))
                 # Force axes to have same scale for all subsets
                 ax.set_xlim(ymin, ymax)
                 ax.set_ylim(ymin, ymax)
@@ -276,7 +281,13 @@ def plot_pred_vs_actual_from_file(model_path, external_training_data=None, plot_
     dataset_key=dataset_dict['dataset_key']
     split_dict=config['splitting_parameters']
     splitter = split_dict['splitter']
-    split_file=dataset_key.replace('.csv',f"_{split_dict['split_strategy']}_{splitter}_{split_dict['split_uuid']}.csv")
+    split_strategy = split_dict['split_strategy']
+    if split_strategy == 'k_fold_cv':
+        split_file=dataset_key.replace('.csv',f"_{split_dict['num_folds']}_fold_cv_{splitter}_{split_dict['split_uuid']}.csv")
+        split_subsets = ['train_valid', 'test']
+    else:
+        split_file=dataset_key.replace('.csv',f"_{split_strategy}_{splitter}_{split_dict['split_uuid']}.csv")
+        split_subsets = ['train', 'valid', 'test']
     split=pd.read_csv(split_file)
     split=split.rename(columns={'cmpd_id':dataset_dict['id_col']})
     
@@ -292,23 +303,25 @@ def plot_pred_vs_actual_from_file(model_path, external_training_data=None, plot_
     
     # plot
     sns.set_context('notebook')
-    fig, axes = plt.subplots(len(response_cols), 3, figsize=(plot_size*3, plot_size*len(response_cols)))
-    suptitle = f"{dataset_name}  {splitter} split {model_type} model on {features_label}, predicted vs actual values"
+    nss = len(split_subsets)
+    fig, axes = plt.subplots(len(response_cols), nss, figsize=(plot_size*nss, plot_size*len(response_cols)))
+    suptitle = f"{dataset_name}  {splitter} {split_strategy} split {model_type} model on {features_label}, predicted vs actual values"
     fig.suptitle(suptitle, y=0.95)
     axes = axes.flatten()
     for i,resp in enumerate(response_cols):
         actual_col = f'{resp}_actual'
         pred_col = f'{resp}_pred'
-        y_actual = pred_df[actual_col].values
-        y_pred = pred_df[pred_col].values
+        task_pred_df = pred_df[pred_df[actual_col].notna() & pred_df[pred_col].notna()]
+        y_actual = task_pred_df[actual_col].values
+        y_pred = task_pred_df[pred_col].values
         ymin = min(min(y_actual), min(y_pred))
         ymax = max(max(y_actual), max(y_pred))
-        for j, subset in enumerate(['train','valid','test']):
-            ax = axes[3*i + j]
+        for j, subset in enumerate(split_subsets):
+            ax = axes[nss*i + j]
             # Force axes to have same scale for all subsets for same task (but not different tasks!)
             ax.set_xlim(ymin, ymax)
             ax.set_ylim(ymin, ymax)
-            tmp=pred_df[pred_df.subset==subset]
+            tmp = task_pred_df[task_pred_df.subset==subset]
             r2 = metrics.r2_score(tmp[actual_col].values, tmp[pred_col].values)
             ax.set_xlabel(f"Actual {resp}")
             ax.set_ylabel(f"Predicted {resp}")
@@ -375,54 +388,57 @@ def plot_perf_vs_epoch(MP, plot_size=7, pdf_dir=None):
         pdf = PdfPages(pdf_path)
     subset_colors = dict(training='blue', validation='forestgreen', test='red')
     subset_shades = dict(training='deepskyblue', validation='lightgreen', test='hotpink')
-    fig, axes = plt.subplots(1, num_subplots, figsize=(plot_size*num_subplots, plot_size))
-    """
-    suptitle = '%s dataset\n%s vs epoch for %s %s model on %s features with %s split\nBest validation set performance at epoch %d' % (
-            MP.params.dataset_name, perf_label, MP.params.model_type,  MP.params.prediction_type,
-            MP.params.featurizer,  MP.params.splitter,  best_epoch)
-    """
-    suptitle = f"{MP.params.dataset_name} dataset, " \
-        f"{MP.params.model_type} {MP.params.prediction_type} model on {features_label} with {MP.params.splitter} split\n" \
-        f"Best validation set {model_score_type_label} at epoch {best_epoch}"
-    fig.suptitle(suptitle, y=0.99)
-    # Plot default score type vs epoch
-    ax = axes[0] if num_subplots > 1 else axes
-    for subset in ['training', 'validation', 'test']:
-        epoch = list(range(len(subset_perf[subset])))
-        ax.plot(epoch, subset_perf[subset], color=subset_colors[subset], label=subset)
-        # Add shading to show variance across folds during cross-validation
-        if (num_folds > 1) and (subset == 'validation'):
-            ax.fill_between(epoch, subset_perf[subset] + subset_std[subset], subset_perf[subset] - subset_std[subset],
-                            alpha=0.3, facecolor=subset_shades[subset], linewidth=0)
-    ax.axvline(best_epoch, color='red', linestyle='--')
-    ax.set_xlabel('Epoch')
-    ax.set_ylabel(perf_label)
-    title = f"{perf_label} vs epoch"
-    #if num_subplots == 1:
-    #    title += f", Best validation set {perf_label} at epoch {best_epoch)"
-    ax.set_title(title, fontdict={'fontsize' : 12})
-    legend = ax.legend(loc='lower right')
 
-    # Now plot the score used for choosing the best epoch and model params, if different from the default R2 or ROC AUC
-    if num_subplots == 2:
-        ax = axes[1]
+    with sns.plotting_context("notebook"):
+    
+        fig, axes = plt.subplots(1, num_subplots, figsize=(plot_size*num_subplots, plot_size))
         """
-        title = '%s dataset\n%s vs epoch for %s %s model on %s features with %s split\nBest validation set performance at epoch %d' % (
-                MP.params.dataset_name, model_score_type, MP.params.model_type,  MP.params.prediction_type,
+        suptitle = '%s dataset\n%s vs epoch for %s %s model on %s features with %s split\nBest validation set performance at epoch %d' % (
+                MP.params.dataset_name, perf_label, MP.params.model_type,  MP.params.prediction_type,
                 MP.params.featurizer,  MP.params.splitter,  best_epoch)
         """
-        epoch = list(range(num_epochs))
-        ax.plot(epoch, model_scores, color=subset_colors['validation'])
-        plt.axvline(best_epoch, color='red', linestyle='--')
+        suptitle = f"{MP.params.dataset_name} dataset, " \
+            f"{MP.params.model_type} {MP.params.prediction_type} model on {features_label} with {MP.params.splitter} split\n" \
+            f"Best validation set {model_score_type_label} at epoch {best_epoch}"
+        fig.suptitle(suptitle, y=0.99)
+        # Plot default score type vs epoch
+        ax = axes[0] if num_subplots > 1 else axes
+        for subset in ['training', 'validation', 'test']:
+            epoch = list(range(len(subset_perf[subset])))
+            ax.plot(epoch, subset_perf[subset], color=subset_colors[subset], label=subset)
+            # Add shading to show variance across folds during cross-validation
+            if (num_folds > 1) and (subset == 'validation'):
+                ax.fill_between(epoch, subset_perf[subset] + subset_std[subset], subset_perf[subset] - subset_std[subset],
+                                alpha=0.3, facecolor=subset_shades[subset], linewidth=0)
+        ax.axvline(best_epoch, color='red', linestyle='--')
         ax.set_xlabel('Epoch')
-        if model_score_type in perf.loss_funcs:
-            score_label = f"Negative {model_score_type_label}"
-            title = f"Validation set negative {model_score_type_label} vs epoch"
-        else:
-            score_label = model_score_type_label
-            title = f"Validation set {model_score_type_label} vs epoch"
-        ax.set_ylabel(score_label)
+        ax.set_ylabel(perf_label)
+        title = f"{perf_label} vs epoch"
+        #if num_subplots == 1:
+        #    title += f", Best validation set {perf_label} at epoch {best_epoch)"
         ax.set_title(title, fontdict={'fontsize' : 12})
+        legend = ax.legend(loc='lower right')
+    
+        # Now plot the score used for choosing the best epoch and model params, if different from the default R2 or ROC AUC
+        if num_subplots == 2:
+            ax = axes[1]
+            """
+            title = '%s dataset\n%s vs epoch for %s %s model on %s features with %s split\nBest validation set performance at epoch %d' % (
+                    MP.params.dataset_name, model_score_type, MP.params.model_type,  MP.params.prediction_type,
+                    MP.params.featurizer,  MP.params.splitter,  best_epoch)
+            """
+            epoch = list(range(num_epochs))
+            ax.plot(epoch, model_scores, color=subset_colors['validation'])
+            plt.axvline(best_epoch, color='red', linestyle='--')
+            ax.set_xlabel('Epoch')
+            if model_score_type in perf.loss_funcs:
+                score_label = f"Negative {model_score_type_label}"
+                title = f"Validation set negative {model_score_type_label} vs epoch"
+            else:
+                score_label = model_score_type_label
+                title = f"Validation set {model_score_type_label} vs epoch"
+            ax.set_ylabel(score_label)
+            ax.set_title(title, fontdict={'fontsize' : 12})
     if pdf_dir is not None:
         pdf.savefig(fig)
         pdf.close()
@@ -624,17 +640,22 @@ def plot_confusion_matrices(model, epoch_label='best', plot_size=7):
         raise ValueError('model must be either a ModelPipeline or a path to a saved model')
     tasks = list(metrics_dict.keys())
     subsets = list(metrics_dict[tasks[0]].keys())
-    fig, axes = plt.subplots(len(tasks), len(subsets), figsize=(plot_size*len(subsets), plot_size*len(tasks)))
-    axes = axes.flatten()
-    for it, task in enumerate(tasks):
-        for iss, subset in enumerate(subsets):
-            cmatrix = np.array(metrics_dict[task][subset]['confusion_matrix'][0])
-            cmd = ConfusionMatrixDisplay(cmatrix)
-            ax = axes[len(subsets)*it + iss]
-            cmd.plot(ax=ax, colorbar=False)
-            ax.set_title(f"{task}, {subset} subset")
-            ax.set_ylabel("True class")
-            ax.set_xlabel("Predicted class")
+    with sns.plotting_context('poster'):
+        fig, axes = plt.subplots(len(tasks), len(subsets), figsize=(plot_size*len(subsets), plot_size*len(tasks)))
+        axes = axes.flatten()
+        for it, task in enumerate(tasks):
+            for iss, subset in enumerate(subsets):
+                if len(tasks)>1:
+                    cmatrix = np.array(metrics_dict[task][subset]['confusion_matrix'])
+                else:
+                    cmatrix = np.array(metrics_dict[task][subset]['confusion_matrix'][0])
+                cmd = ConfusionMatrixDisplay(cmatrix)
+                ax = axes[len(subsets)*it + iss]
+                cmd.plot(ax=ax, colorbar=False)
+                ax.set_title(f"{task}, {subset} subset")
+                ax.set_ylabel("True class")
+                ax.set_xlabel("Predicted class")
+                plt.tight_layout()
 
 
 #------------------------------------------------------------------------------------------------------------------------
@@ -672,9 +693,9 @@ def plot_model_metrics(model, epoch_label='best', plot_size=7):
                 metric_list.append(score_type_label[mvar])
                 value_list.append(tsm_dict[mvar])
     metric_df = pd.DataFrame(dict(task=task_list, subset=subset_list, metric=metric_list, value=value_list))
-
-    fgrid = sns.FacetGrid(data=metric_df, row='task', col='subset', height=plot_size, hue='metric', sharex=True, sharey=True)
-    fgrid.map_dataframe(sns.barplot, x='value', y='metric')
+    with sns.plotting_context('poster'):
+        fgrid = sns.FacetGrid(data=metric_df, row='task', col='subset', height=plot_size, hue='metric', sharex=True, sharey=True)
+        fgrid.map_dataframe(sns.barplot, x='value', y='metric')
 
 #------------------------------------------------------------------------------------------------------------------------
 def plot_ROC_curve(MP, epoch_label='best', plot_size=7, pdf_dir=None):
@@ -707,24 +728,25 @@ def plot_ROC_curve(MP, epoch_label='best', plot_size=7, pdf_dir=None):
     subset_colors = dict(train='blue', valid='forestgreen', test='red', full='purple')
     # For multitask, do a separate figure for each task
     ntasks = curve_data[subsets[0]]['prob_active'].shape[1]
-    for i in range(ntasks):
-        fig, ax = plt.subplots(figsize=(plot_size,plot_size))
-        title = '%s dataset\nROC curve for %s %s classifier on %s features with %s split' % (
-                           params.dataset_name, params.response_cols[i], 
-                           params.model_type, params.featurizer, params.splitter)
-        for subset in subsets:
-            fpr, tpr, thresholds = metrics.roc_curve(curve_data[subset]['true_classes'][:,i],
-                                                     curve_data[subset]['prob_active'][:,i])
-      
-            roc_auc = curve_data[subset]['roc_aucs'][i]
-            ax.step(fpr, tpr, color=subset_colors[subset], label="%s: AUC = %.3f" % (subset, roc_auc))
-        ax.set_xlabel('False positive rate')
-        ax.set_ylabel('True positive rate')
-        ax.set_title(title, fontdict={'fontsize' : 12})
-        legend = ax.legend(loc='lower right')
-    
-        if pdf_dir is not None:
-            pdf.savefig(fig)
+    with sns.plotting_context('talk'):
+        for i in range(ntasks):
+            fig, ax = plt.subplots(figsize=(plot_size,plot_size))
+            title = '%s dataset\nROC curve for %s %s classifier on %s features with %s split' % (
+                               params.dataset_name, params.response_cols[i], 
+                               params.model_type, params.featurizer, params.splitter)
+            for subset in subsets:
+                fpr, tpr, thresholds = metrics.roc_curve(curve_data[subset]['true_classes'][:,i],
+                                                         curve_data[subset]['prob_active'][:,i])
+          
+                roc_auc = curve_data[subset]['roc_aucs'][i]
+                ax.step(fpr, tpr, color=subset_colors[subset], label="%s: AUC = %.3f" % (subset, roc_auc))
+            ax.set_xlabel('False positive rate')
+            ax.set_ylabel('True positive rate')
+            ax.set_title(title, fontdict={'fontsize' : 12})
+            legend = ax.legend(loc='lower right')
+        
+            if pdf_dir is not None:
+                pdf.savefig(fig)
     if pdf_dir is not None:
         pdf.close()
         MP.log.info("Wrote plot to %s" % pdf_path)
@@ -748,20 +770,21 @@ def plot_prec_recall_curve(MP, epoch_label='best', plot_size=7, pdf_dir=None):
     curve_data = get_classifier_perf_data_from_pipeline(MP, epoch_label=epoch_label)
     tasks = list(curve_data.keys())
     ntasks = len(tasks)
-    fig, axes = plt.subplots(ntasks, 1, figsize=(plot_size, plot_size*ntasks))
-    subset_colors = dict(train='blue', valid='forestgreen', test='red', full='purple')
-    for itt, task in enumerate(tasks):
-        if ntasks > 1:
-            ax = axes[itt]
-        else:
-            ax = axes
-        subsets = list(curve_data[task].keys())
-        for iss, subset in enumerate(subsets):
-            ss_data = curve_data[task][subset]
-            prd = PrecisionRecallDisplay.from_predictions(ss_data['true_class'], ss_data['class_probs'],
-                                                        ax=ax, drawstyle='default', c=subset_colors[subset], name=subset)
-            ax.set_title(f"Response column: '{task}'")    
-        legend = ax.legend(loc='upper right')
+    with sns.plotting_context('notebook'):
+        fig, axes = plt.subplots(ntasks, 1, figsize=(plot_size, plot_size*ntasks))
+        subset_colors = dict(train='blue', valid='forestgreen', test='red', full='purple')
+        for itt, task in enumerate(tasks):
+            if ntasks > 1:
+                ax = axes[itt]
+            else:
+                ax = axes
+            subsets = list(curve_data[task].keys())
+            for iss, subset in enumerate(subsets):
+                ss_data = curve_data[task][subset]
+                prd = PrecisionRecallDisplay.from_predictions(ss_data['true_class'], ss_data['class_probs'],
+                                                            ax=ax, drawstyle='default', c=subset_colors[subset], name=subset)
+                ax.set_title(f"Response column: '{task}'")    
+            legend = ax.legend(loc='lower left')
 
     if pdf_dir is not None:
         pdf.savefig(fig)

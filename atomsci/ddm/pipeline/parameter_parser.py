@@ -1249,7 +1249,10 @@ def get_parser():
         help='How much weight to give the tanimoto distance between training and valid partitions.')
     parser.add_argument(
         '--mtss_split_fraction_weight', default=1.0, type=float,
-        help='How much weight to give adherence to requested subset franctions.')
+        help='How much weight to give adherence to requested subset fractions.')
+    parser.add_argument(
+        '--mtss_response_distr_weight', default=1.0, type=float,
+        help='How much weight to give to matching the response value distributions between split subsets.')
 
     # **********************************************************************************************************
     # model_building_parameters: transformers
@@ -1260,7 +1263,7 @@ def get_parser():
         '--response_transform_type', dest='response_transform_type', default='normalization',
         help='type of normalization for the response column TODO: Not currently implemented')
     parser.add_argument(
-        '--weight_transform_type', dest='weight_transform_type', choices=['balancing'], default=None,
+        '--weight_transform_type', dest='weight_transform_type', choices=[None, 'None', 'balancing'], default=None,
         help='type of normalization for the weights')
     parser.add_argument(
         '--transformer_bucket', dest='transformer_bucket', default=None,
