@@ -1,9 +1,8 @@
-import os
-
 from atomsci.ddm.pipeline import compare_models as cm
 from atomsci.ddm.utils import llnl_utils
 
 import pytest
+import atomsci.ddm.utils.test_utils as tu
 
 
 def clean():
@@ -17,8 +16,8 @@ def test():
         assert True
         return
 
-    tar_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
+    tar_file = tu.relative_to_file(
+        __file__,
         "../../examples/BSEP/models/bsep_classif_scaffold_split.tar.gz",
     )
     print(tar_file)
@@ -30,8 +29,8 @@ def test():
 
 @pytest.mark.basic
 def test_graphconv():
-    tar_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
+    tar_file = tu.relative_to_file(
+        __file__,
         "../../examples/BSEP/models/bsep_classif_scaffold_split_graphconv.tar.gz",
     )
     print(tar_file)
@@ -43,8 +42,8 @@ def test_graphconv():
 
 @pytest.mark.basic
 def test_versions_not_compatible():
-    tar_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
+    tar_file = tu.relative_to_file(
+        __file__,
         "../../examples/tutorials/models/aurka_union_trainset_base_smiles_model_ampl_120_2fb9ae80-26d4-4f27-af28-2e9e9db594de.tar.gz",
     )
     print(tar_file)
@@ -56,8 +55,8 @@ def test_versions_not_compatible():
 
 @pytest.mark.basic
 def test_versions_compatible():
-    tar_file = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
+    tar_file = tu.relative_to_file(
+        __file__,
         "../../examples/BSEP/models/bsep_classif_scaffold_split_graphconv.tar.gz",
     )
     print(tar_file)

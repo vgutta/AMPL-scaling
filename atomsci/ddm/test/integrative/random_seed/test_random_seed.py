@@ -14,21 +14,24 @@ import atomsci.ddm.pipeline.parameter_parser as parse
 import atomsci.ddm.utils.curate_data as curate_data
 import atomsci.ddm.utils.struct_utils as struct_utils
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import integrative_utilities
-sys.path.append(os.path.join(os.path.dirname(__file__), '../delaney_Panel'))
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../delaney_Panel"))
 import test_delaney_panel as tdp
 
+
 def clean():
-    files = glob.glob('delaney-processed*')
+    files = glob.glob("delaney-processed*")
     for f in files:
         if os.path.isfile(f):
             os.remove(f)
 
-    if os.path.exists('result'):
-        shutil.rmtree('result')
-    if os.path.exists('scaled_descriptors'):
-        shutil.rmtree('scaled_descriptors')
+    if os.path.exists("result"):
+        shutil.rmtree("result")
+    if os.path.exists("scaled_descriptors"):
+        shutil.rmtree("scaled_descriptors")
+
 
 @pytest.mark.basic
 def test_RF():
@@ -37,15 +40,16 @@ def test_RF():
     # Train model
     # -----------
     # Read parameter JSON file
-    prefix = 'delaney-processed'
+    prefix = "delaney-processed"
     num_iterations = 10
-    with open('reg_config_delaney_fit_RF_mordred_filtered.json') as f:
+    with open("reg_config_delaney_fit_RF_mordred_filtered.json") as f:
         config = json.loads(f.read())
 
     r2_scores = []
     for i in range(num_iterations):
         # Parse parameters
         params = parse.wrapper(config)
+        params.result_dir = tu.relative_to_file(__file__, params.result_dir)
 
         # Create model pipeline
         model = mp.ModelPipeline(params)
@@ -60,29 +64,38 @@ def test_RF():
         descriptor_type = params.descriptor_type
         featurizer = params.featurizer
         splitter = params.splitter
-        model_dir = 'result/%s_curated_fit/%s_%s_%s_%s'%(prefix, model_type, featurizer, splitter, prediction_type)
+        model_dir = "result/%s_curated_fit/%s_%s_%s_%s" % (
+            prefix,
+            model_type,
+            featurizer,
+            splitter,
+            prediction_type,
+        )
         uuid = model.params.model_uuid
-        tar_f = 'result/%s_curated_fit_model_%s.tar.gz'%(prefix, uuid)
-        reload_dir = model_dir+'/'+uuid
+        tar_f = "result/%s_curated_fit_model_%s.tar.gz" % (prefix, uuid)
+        reload_dir = model_dir + "/" + uuid
 
         # check saved scores
-        score = integrative_utilities.read_training_statistics_file(reload_dir, 'test', 'r2_score')
+        score = integrative_utilities.read_training_statistics_file(
+            reload_dir, "test", "r2_score"
+        )
         r2_scores.append(score)
 
         ## Load second test set
         ## --------------------
-        #data = pd.read_csv('%s_curated_external.csv'%prefix)
+        # data = pd.read_csv('%s_curated_external.csv'%prefix)
 
-        #predict = pfm.predict_from_model_file(tar_f, data, id_col=params.id_col, 
+        # predict = pfm.predict_from_model_file(tar_f, data, id_col=params.id_col,
         #    smiles_col=params.smiles_col, response_col=params.response_cols)
-        #pred_cols = [f for f in predict.columns if f.endswith('_pred')]
-        #assert len(pred_cols) == len(params.response_cols)
+        # pred_cols = [f for f in predict.columns if f.endswith('_pred')]
+        # assert len(pred_cols) == len(params.response_cols)
 
     print(r2_scores)
-    assert(np.std(r2_scores) > .001)
+    assert np.std(r2_scores) > 0.001
 
     # clean again
     clean()
+
 
 def init():
     """Test full model pipeline: Curate data, fit model, and predict property for new compounds"""
@@ -99,6 +112,7 @@ def init():
     # ------
     tdp.curate()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     test_RF()
-    #pass
+    # pass

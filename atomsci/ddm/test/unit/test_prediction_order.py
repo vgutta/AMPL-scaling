@@ -96,6 +96,7 @@ def test_predict_full_dataset():
 
     has_responses = "response_cols" in pred_params
     pred_params = parse.wrapper(pred_params)
+    pred_params.result_dir = tu.relative_to_file(__file__, pred_params.result_dir)
 
     pipe = mp.create_prediction_pipeline_from_file(
         pred_params, reload_dir=None, model_path=model_path

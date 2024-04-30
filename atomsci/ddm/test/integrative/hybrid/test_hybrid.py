@@ -10,6 +10,7 @@ import pytest
 import atomsci.ddm.pipeline.parameter_parser as parse
 from atomsci.ddm.pipeline import model_pipeline as mp
 from atomsci.ddm.utils import llnl_utils
+import atomsci.ddm.utils.test_utils as tu
 
 from sklearn.metrics import r2_score
 import pytest
@@ -50,12 +51,12 @@ def test():
     python_path = sys.executable
     hp_params["script_dir"] = script_dir
     hp_params["python_path"] = python_path
-
+    hp_params["result_dir"] = tu.relative_to_file(__file__, hp_params["result_dir"])
     params = parse.wrapper(hp_params)
     if not os.path.isfile(params.dataset_key):
         params.dataset_key = os.path.join(params.script_dir, params.dataset_key)
 
-    train_df = pd.read_csv(params.dataset_key)
+    train_df = pd.read_csv(tu.relative_to_file(__file__, params.dataset_key))
 
     print(f"Train a hybrid models with MOE descriptors")
     pl = mp.ModelPipeline(params)

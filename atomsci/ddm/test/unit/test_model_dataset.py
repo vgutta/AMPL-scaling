@@ -502,6 +502,7 @@ def test_load_presplit_dataset():
         __file__, config["dataset_key"]
     )  # change to absolute path
     params = parse.wrapper(config)
+    params.result_dir = tu.relative_to_file(__file__, params_result_dir)
 
     MP = mp.ModelPipeline(params)
     featurization = None

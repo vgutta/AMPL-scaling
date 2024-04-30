@@ -13,6 +13,7 @@ import atomsci.ddm.pipeline.parameter_parser as parse
 import atomsci.ddm.utils.curate_data as curate_data
 import atomsci.ddm.utils.struct_utils as struct_utils
 from atomsci.ddm.utils import llnl_utils
+import atomsci.ddm.utils.test_utils as tu
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import integrative_utilities
@@ -33,11 +34,17 @@ def clean(prefix="delaney-processed"):
 def curate():
     """Curate dataset for model fitting"""
     if (
-        not os.path.isfile("delaney-processed_curated.csv")
-        and not os.path.isfile("delaney-processed_curated_fit.csv")
-        and not os.path.isfile("delaney-processed_curated_external.csv")
+        not os.path.isfile(
+            tu.relative_to_file(__file__, "delaney-processed_curated.csv")
+        )
+        and not os.path.isfile(
+            tu.relative_to_file(__file__, "delaney-processed_curated_fit.csv")
+        )
+        and not os.path.isfile(
+            tu.relative_to_file(__file__, "delaney-processed_curated_external.csv")
+        )
     ):
-        raw_df = pd.read_csv("delaney-processed.csv")
+        raw_df = pd.read_csv(tu.relative_to_file(__file__, "delaney-processed.csv"))
 
         # Generate smiles, inchi
         raw_df["rdkit_smiles"] = raw_df["smiles"].apply(
@@ -81,27 +88,44 @@ def curate():
         # Check distribution of response values
         assert curated_df.shape[0] == 1116, "Error: Incorrect number of compounds"
 
-        curated_df.to_csv("delaney-processed_curated.csv")
+        curated_df.to_csv(
+            tu.relative_to_file(__file__, "delaney-processed_curated.csv")
+        )
 
         # Create second test set by reproducible index for prediction
-        curated_df.tail(999).to_csv("delaney-processed_curated_fit.csv")
-        curated_df.head(117).to_csv("delaney-processed_curated_external.csv")
+        curated_df.tail(999).to_csv(
+            tu.relative_to_file(__file__, "delaney-processed_curated_fit.csv")
+        )
+        curated_df.head(117).to_csv(
+            tu.relative_to_file(__file__, "delaney-processed_curated_external.csv")
+        )
 
-    assert os.path.isfile("delaney-processed_curated.csv")
-    assert os.path.isfile("delaney-processed_curated_fit.csv")
-    assert os.path.isfile("delaney-processed_curated_external.csv")
+    assert os.path.isfile(
+        tu.relative_to_file(__file__, "delaney-processed_curated.csv")
+    )
+    assert os.path.isfile(
+        tu.relative_to_file(__file__, "delaney-processed_curated_fit.csv")
+    )
+    assert os.path.isfile(
+        tu.relative_to_file(__file__, "delaney-processed_curated_external.csv")
+    )
 
 
 def H1_curate():
     """Curate dataset for model fitting"""
     if (
-        not os.path.isfile("H1_curated.csv")
-        and not os.path.isfile("H1_curated_fit.csv")
-        and not os.path.isfile("H1_curated_external.csv")
+        not os.path.isfile(tu.relative_to_file(__file__, "H1_curated.csv"))
+        and not os.path.isfile(tu.relative_to_file(__file__, "H1_curated_fit.csv"))
+        and not os.path.isfile(tu.relative_to_file(__file__, "H1_curated_external.csv"))
     ):
-        curated_df = pd.read_csv("../../test_datasets/H1_std.csv")
+        curated_df = pd.read_csv(
+            tu.relative_to_file(__file__, "../../test_datasets/H1_std.csv")
+        )
         split_df = pd.read_csv(
-            "../../test_datasets/H1_std_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv"
+            tu.relative_to_file(
+                __file__,
+                "../../test_datasets/H1_std_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv",
+            )
         )
         id_col = "compound_id"
         column = "pKi_mean"
@@ -120,7 +144,10 @@ def H1_curate():
 
         curated_df.to_csv("H1_curated.csv", index=False)
         split_df.to_csv(
-            "H1_curated_fit_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv",
+            tu.relative_to_file(
+                __file__,
+                "H1_curated_fit_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv",
+            ),
             index=False,
         )
 
@@ -129,14 +156,21 @@ def H1_curate():
             curated_df[id_col].isin(split_external["cmpd_id"])
         ]
         # Create second test set by reproducible index for prediction
-        curated_df.to_csv("H1_curated_fit.csv", index=False)
-        curated_external_df.to_csv("H1_curated_external.csv", index=False)
+        curated_df.to_csv(
+            tu.relative_to_file(__file__, "H1_curated_fit.csv"), index=False
+        )
+        curated_external_df.to_csv(
+            tu.relative_to_file(__file__, "H1_curated_external.csv"), index=False
+        )
 
-    assert os.path.isfile("H1_curated.csv")
-    assert os.path.isfile("H1_curated_fit.csv")
-    assert os.path.isfile("H1_curated_external.csv")
+    assert os.path.isfile(tu.relative_to_file(__file__, "H1_curated.csv"))
+    assert os.path.isfile(tu.relative_to_file(__file__, "H1_curated_fit.csv"))
+    assert os.path.isfile(tu.relative_to_file(__file__, "H1_curated_external.csv"))
     assert os.path.isfile(
-        "H1_curated_fit_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv"
+        tu.relative_to_file(
+            __file__,
+            "H1_curated_fit_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv",
+        )
     )
 
 
@@ -152,13 +186,22 @@ def duplicate_df(original, id_col):
 def H1_double_curate():
     """Curate dataset for model fitting"""
     if (
-        not os.path.isfile("H1_double_curated.csv")
-        and not os.path.isfile("H1_double_curated_fit.csv")
-        and not os.path.isfile("H1_double_curated_external.csv")
+        not os.path.isfile(tu.relative_to_file(__file__, "H1_double_curated.csv"))
+        and not os.path.isfile(
+            tu.relative_to_file(__file__, "H1_double_curated_fit.csv")
+        )
+        and not os.path.isfile(
+            tu.relative_to_file(__file__, "H1_double_curated_external.csv")
+        )
     ):
-        curated_df = pd.read_csv("../../test_datasets/H1_std.csv")
+        curated_df = pd.read_csv(
+            tu.relative_to_file(__file__, "../../test_datasets/H1_std.csv")
+        )
         split_df = pd.read_csv(
-            "../../test_datasets/H1_std_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv"
+            tu.relative_to_file(
+                __file__,
+                "../../test_datasets/H1_std_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv",
+            )
         )
         id_col = "compound_id"
         column = "pKi_mean"
@@ -179,9 +222,14 @@ def H1_double_curate():
         curated_df = duplicate_df(curated_df, id_col)
         split_df = duplicate_df(split_df, "cmpd_id")
 
-        curated_df.to_csv("H1_double_curated.csv", index=False)
+        curated_df.to_csv(
+            tu.relative_to_file(__file__, "H1_double_curated.csv"), index=False
+        )
         split_df.to_csv(
-            "H1_double_curated_fit_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv",
+            tu.relative_to_file(
+                __file__,
+                "H1_double_curated_fit_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv",
+            ),
             index=False,
         )
 
@@ -190,26 +238,35 @@ def H1_double_curate():
             curated_df[id_col].isin(split_external["cmpd_id"])
         ]
         # Create second test set by reproducible index for prediction
-        curated_df.to_csv("H1_double_curated_fit.csv", index=False)
-        curated_external_df.to_csv("H1_double_curated_external.csv", index=False)
+        curated_df.to_csv(
+            tu.relative_to_file(__file__, "H1_double_curated_fit.csv"), index=False
+        )
+        curated_external_df.to_csv(
+            tu.relative_to_file(__file__, "H1_double_curated_external.csv"), index=False
+        )
 
-    assert os.path.isfile("H1_double_curated.csv")
-    assert os.path.isfile("H1_double_curated_fit.csv")
-    assert os.path.isfile("H1_double_curated_external.csv")
+    assert os.path.isfile(tu.relative_to_file(__file__, "H1_double_curated.csv"))
+    assert os.path.isfile(tu.relative_to_file(__file__, "H1_double_curated_fit.csv"))
     assert os.path.isfile(
-        "H1_double_curated_fit_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv"
+        tu.relative_to_file(__file__, "H1_double_curated_external.csv")
+    )
+    assert os.path.isfile(
+        tu.relative_to_file(
+            __file__,
+            "H1_double_curated_fit_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv",
+        )
     )
 
 
 def download():
     """Separate download function so that download can be run separately if there is no internet."""
-    if not os.path.isfile("delaney-processed.csv"):
+    if not os.path.isfile(tu.relative_to_file(__file__, "delaney-processed.csv")):
         integrative_utilities.download_save(
             "https://deepchemdata.s3-us-west-1.amazonaws.com/datasets/delaney-processed.csv",
             "delaney-processed.csv",
         )
 
-    assert os.path.isfile("delaney-processed.csv")
+    assert os.path.isfile(tu.relative_to_file(__file__, "delaney-processed.csv"))
 
 
 def train_and_predict(train_json_f, prefix="delaney-processed"):
@@ -244,7 +301,7 @@ def train_and_predict(train_json_f, prefix="delaney-processed"):
     )
     uuid = model.params.model_uuid
     tar_f = "result/%s_curated_fit_model_%s.tar.gz" % (prefix, uuid)
-    reload_dir = model_dir + "/" + uuid
+    reload_dir = tu.relative_to_file(__file__, model_dir + "/" + uuid)
 
     # Check training statistics
     # -------------------------
@@ -306,9 +363,10 @@ def train_and_predict(train_json_f, prefix="delaney-processed"):
         len(model.params.response_cols),
         model.params.splitter,
     )
-    combined.to_csv(pred_csv_name)
+    combined.to_csv(tu.relative_to_file(__file__, pred_csv_name))
     assert (
-        os.path.isfile(pred_csv_name) and os.path.getsize(pred_csv_name) > 0
+        os.path.isfile(tu.relative_to_file(__file__, pred_csv_name))
+        and os.path.getsize(tu.relative_to_file(__file__, pred_csv_name)) > 0
     ), "Error: Prediction file not created"
 
 
@@ -360,46 +418,64 @@ def H1_double_init():
 @pytest.mark.basic
 def test_reg_config_delaney_fit_RF_3fold():
     init()
-    train_and_predict("jsons/config_delaney_fit_rf_3fold_cv.json")  # fine
+    train_and_predict(
+        tu.relative_to_file(__file__, "jsons/config_delaney_fit_rf_3fold_cv.json")
+    )  # fine
 
 
 @pytest.mark.basic
 def test_reg_config_delaney_fit_XGB_3fold():
     init()
-    train_and_predict("jsons/config_delaney_fit_xgb_3fold_cv.json")  # fine
+    train_and_predict(
+        tu.relative_to_file(__file__, "jsons/config_delaney_fit_xgb_3fold_cv.json")
+    )  # fine
 
 
 @pytest.mark.basic
 def test_reg_config_delaney_fit_NN_graphconv():
     init()
-    train_and_predict("jsons/reg_config_delaney_fit_NN_graphconv.json")  # fine
+    train_and_predict(
+        tu.relative_to_file(__file__, "jsons/reg_config_delaney_fit_NN_graphconv.json")
+    )  # fine
 
 
 @pytest.mark.basic
 def test_reg_config_delaney_fit_XGB_mordred_filtered():
     init()
-    train_and_predict("jsons/reg_config_delaney_fit_XGB_mordred_filtered.json")  # fine
+    train_and_predict(
+        tu.relative_to_file(
+            __file__, "jsons/reg_config_delaney_fit_XGB_mordred_filtered.json"
+        )
+    )  # fine
 
 
 @pytest.mark.basic
 def test_reg_config_delaney_fit_RF_mordred_filtered():
     init()
     train_and_predict(
-        "jsons/reg_config_delaney_fit_RF_mordred_filtered.json"
+        tu.relative_to_file(
+            __file__, "jsons/reg_config_delaney_fit_RF_mordred_filtered.json"
+        )
     )  # predict_full_dataset broken
 
 
 @pytest.mark.basic
 def test_reg_kfold_config_delaney_fit_NN_graphconv():
     init()
-    train_and_predict("jsons/reg_kfold_config_delaney_fit_NN_graphconv.json")  # fine
+    train_and_predict(
+        tu.relative_to_file(
+            __file__, "jsons/reg_kfold_config_delaney_fit_NN_graphconv.json"
+        )
+    )  # fine
 
 
 @pytest.mark.basic
 def test_class_config_delaney_fit_XGB_mordred_filtered():
     init()
     train_and_predict(
-        "jsons/class_config_delaney_fit_XGB_mordred_filtered.json"
+        tu.relative_to_file(
+            __file__, "jsons/class_config_delaney_fit_XGB_mordred_filtered.json"
+        )
     )  # breaks because labels aren't numbers
 
 
@@ -407,7 +483,7 @@ def test_class_config_delaney_fit_XGB_mordred_filtered():
 def test_class_config_delaney_fit_NN_ecfp():
     init()
     train_and_predict(
-        "jsons/class_config_delaney_fit_NN_ecfp.json"
+        tu.relative_to_file(__file__, "jsons/class_config_delaney_fit_NN_ecfp.json")
     )  # only works for class
 
 
@@ -415,20 +491,31 @@ def test_class_config_delaney_fit_NN_ecfp():
 def test_multi_class_random_config_delaney_fit_NN_mordred_filtered():
     init()
     train_and_predict(
-        "jsons/multi_class_random_config_delaney_fit_NN_mordred_filtered.json"
+        tu.relative_to_file(
+            __file__,
+            "jsons/multi_class_random_config_delaney_fit_NN_mordred_filtered.json",
+        )
     )  # crashes during run
 
 
 @pytest.mark.basic
 def test_multi_class_config_delaney_fit_NN_graphconv():
     init()
-    train_and_predict("jsons/multi_class_config_delaney_fit_NN_graphconv.json")  # fine
+    train_and_predict(
+        tu.relative_to_file(
+            __file__, "jsons/multi_class_config_delaney_fit_NN_graphconv.json"
+        )
+    )  # fine
 
 
 @pytest.mark.basic
 def test_multi_reg_config_delaney_fit_NN_graphconv():
     init()
-    train_and_predict("jsons/multi_reg_config_delaney_fit_NN_graphconv.json")  # fine
+    train_and_predict(
+        tu.relative_to_file(
+            __file__, "jsons/multi_reg_config_delaney_fit_NN_graphconv.json"
+        )
+    )  # fine
 
 
 # MOE doesn't seem to predict delaney very well
@@ -440,7 +527,10 @@ def test_multi_reg_config_delaney_fit_NN_graphconv():
 def test_reg_config_H1_fit_XGB_moe():
     if llnl_utils.is_lc_system():
         H1_init()
-        train_and_predict("jsons/reg_config_H1_fit_XGB_moe.json", prefix="H1")
+        train_and_predict(
+            tu.relative_to_file(__file__, "jsons/reg_config_H1_fit_XGB_moe.json"),
+            prefix="H1",
+        )
 
 
 @pytest.mark.gpu_required
@@ -449,7 +539,10 @@ def test_reg_config_H1_fit_XGB_moe():
 def test_reg_config_H1_fit_NN_moe():
     if llnl_utils.is_lc_system():
         H1_init()
-        train_and_predict("jsons/reg_config_H1_fit_NN_moe.json", prefix="H1")
+        train_and_predict(
+            tu.relative_to_file(__file__, "jsons/reg_config_H1_fit_NN_moe.json"),
+            prefix="H1",
+        )
 
 
 @pytest.mark.gpu_required
@@ -459,7 +552,8 @@ def test_reg_config_H1_double_fit_NN_moe():
     if llnl_utils.is_lc_system():
         H1_double_init()
         train_and_predict(
-            "jsons/reg_config_H1_double_fit_NN_moe.json", prefix="H1_double"
+            tu.relative_to_file(__file__, "jsons/reg_config_H1_double_fit_NN_moe.json"),
+            prefix="H1_double",
         )
 
 
@@ -469,7 +563,12 @@ def test_reg_config_H1_double_fit_NN_moe():
 def test_multi_class_random_config_H1_fit_NN_moe():
     if llnl_utils.is_lc_system():
         H1_init()
-        train_and_predict("jsons/multi_class_config_H1_fit_NN_moe.json", prefix="H1")
+        train_and_predict(
+            tu.relative_to_file(
+                __file__, "jsons/multi_class_config_H1_fit_NN_moe.json"
+            ),
+            prefix="H1",
+        )
 
 
 @pytest.mark.gpu_required
@@ -478,7 +577,10 @@ def test_multi_class_random_config_H1_fit_NN_moe():
 def test_class_config_H1_fit_NN_moe():
     if llnl_utils.is_lc_system():
         H1_init()
-        train_and_predict("jsons/class_config_H1_fit_NN_moe.json", prefix="H1")
+        train_and_predict(
+            tu.relative_to_file(__file__, "jsons/class_config_H1_fit_NN_moe.json"),
+            prefix="H1",
+        )
 
 
 if __name__ == "__main__":

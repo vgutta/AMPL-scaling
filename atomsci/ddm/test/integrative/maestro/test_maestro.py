@@ -137,6 +137,7 @@ def test():
     json_file = "nn_ecfp.json"
     with open(json_file, "r") as f:
         hp_params = json.load(f)
+    hp_params.result_dir = tu.relative_to_file(__file__, hp_params.result_dir)
     pparams = parse.wrapper(hp_params)
 
     print("launch maestro")

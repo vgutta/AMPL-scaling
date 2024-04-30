@@ -18,6 +18,7 @@ import atomsci.ddm.pipeline.parameter_parser as parse
 import atomsci.ddm.utils.model_retrain as mr
 import atomsci.ddm.utils.file_utils as futils
 from atomsci.ddm.utils import llnl_utils
+import atomsci.ddm.utils.test_utils as tu
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import integrative_utilities
@@ -52,9 +53,14 @@ def H1_curate():
         and not os.path.isfile("H1_curated_fit.csv")
         and not os.path.isfile("H1_curated_external.csv")
     ):
-        curated_df = pd.read_csv("../../test_datasets/H1_std.csv")
+        curated_df = pd.read_csv(
+            tu.relative_to_file(__file__, "../../test_datasets/H1_std.csv")
+        )
         split_df = pd.read_csv(
-            "../../test_datasets/H1_std_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv"
+            tu.relative_to_file(
+                __file__,
+                "../../test_datasets/H1_std_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv",
+            )
         )
         id_col = "compound_id"
         column = "pKi_mean"
@@ -81,9 +87,12 @@ def H1_curate():
             lambda x: num_atoms(x)
         )
 
-        curated_df.to_csv("H1_curated.csv", index=False)
+        curated_df.to_csv(tu.relative_to_file(__file__, "H1_curated.csv"), index=False)
         split_df.to_csv(
-            "H1_curated_fit_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv",
+            tu.relative_to_file(
+                __file__,
+                "H1_curated_fit_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv",
+            ),
             index=False,
         )
 
@@ -92,14 +101,21 @@ def H1_curate():
             curated_df[id_col].isin(split_external["cmpd_id"])
         ]
         # Create second test set by reproducible index for prediction
-        curated_df.to_csv("H1_curated_fit.csv", index=False)
-        curated_external_df.to_csv("H1_curated_external.csv", index=False)
+        curated_df.to_csv(
+            tu.relative_to_file(__file__, "H1_curated_fit.csv"), index=False
+        )
+        curated_external_df.to_csv(
+            tu.relative_to_file(__file__, "H1_curated_external.csv"), index=False
+        )
 
-    assert os.path.isfile("H1_curated.csv")
-    assert os.path.isfile("H1_curated_fit.csv")
-    assert os.path.isfile("H1_curated_external.csv")
+    assert os.path.isfile(tu.relative_to_file(__file__, "H1_curated.csv"))
+    assert os.path.isfile(tu.relative_to_file(__file__, "H1_curated_fit.csv"))
+    assert os.path.isfile(tu.relative_to_file(__file__, "H1_curated_external.csv"))
     assert os.path.isfile(
-        "H1_curated_fit_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv"
+        tu.relative_to_file(
+            __file__,
+            "H1_curated_fit_train_valid_test_scaffold_002251a2-83f8-4511-acf5-e8bbc5f86677.csv",
+        )
     )
 
 
@@ -135,7 +151,7 @@ def train_and_predict(train_json_f, prefix="delaney-processed"):
     )
     uuid = model.params.model_uuid
     tar_f = "result/%s_curated_fit_model_%s.tar.gz" % (prefix, uuid)
-    reload_dir = model_dir + "/" + uuid
+    reload_dir = tu.relative_to_file(__file__, model_dir + "/" + uuid)
 
     # Check training statistics
     # -------------------------
@@ -196,9 +212,10 @@ def train_and_predict(train_json_f, prefix="delaney-processed"):
         len(model.params.response_cols),
         model.params.splitter,
     )
-    combined.to_csv(pred_csv_name)
+    combined.to_csv(tu.relative_to_file(__file__, pred_csv_name))
     assert (
-        os.path.isfile(pred_csv_name) and os.path.getsize(pred_csv_name) > 0
+        os.path.isfile(tu.relative_to_file(__file__, pred_csv_name))
+        and os.path.getsize(tu.relative_to_file(__file__, pred_csv_name)) > 0
     ), "Error: Prediction file not created"
 
     return tar_f

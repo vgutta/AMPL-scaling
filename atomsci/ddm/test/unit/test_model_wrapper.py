@@ -1,7 +1,5 @@
 import os
-import sys
 import pytest
-import inspect
 import numpy as np
 import atomsci.ddm.pipeline.featurization as feat
 import atomsci.ddm.pipeline.parameter_parser as parse
@@ -14,92 +12,93 @@ import atomsci.ddm.pipeline.perf_data as perf_data
 
 import utils_testing as utils
 import copy
-import pdb
+import atomsci.ddm.utils.test_utils as tu
 
 """This testing script assumes that /ds/data/public/delaney/delaney-processed.csv is still on the same path on twintron. Assumes that the dataset_key: /ds/projdata/gsk_data/GSK_derived/PK_parameters/gsk_blood_plasma_partition_rat_crit_res_data.csv under the bucket gskdata and with the object_oid: 5af0e6368003ff018de33db5 still exists. 
 """
 
-#The dataset object from file is a delaney dataset using an ecfp featurizer with a default scaffold split.
+# The dataset object from file is a delaney dataset using an ecfp featurizer with a default scaffold split.
 
 datastore_is_down = utils.datastore_status()
 MP_delaney_ecfp_train_valid_test_random = utils.delaney_pipeline()
 (delaney_params, mdl_dataset_delaney, delaney_df) = utils.delaney_objects()
 
-general_params = {'dataset_key' : './delaney-processed.csv',
-'featurizer': 'ecfp',
-'response_cols': 'measured log solubility in mols per litre',
-'id_col': 'Compound ID',
-'smiles_col': 'smiles',
-'output_dir': 'pytest',
-'model_type' : 'NN',
-'splitter' : 'scaffold',
-'prediction_type' : 'regression',
-'baseline_epoch' : '7',
-'max_epochs' : '10',
-'datastore': 'False',
-'save_results': 'False'}
-
-
-
+general_params = {
+    "dataset_key": "./delaney-processed.csv",
+    "featurizer": "ecfp",
+    "response_cols": "measured log solubility in mols per litre",
+    "id_col": "Compound ID",
+    "smiles_col": "smiles",
+    "output_dir": "pytest",
+    "model_type": "NN",
+    "splitter": "scaffold",
+    "prediction_type": "regression",
+    "baseline_epoch": "7",
+    "max_epochs": "10",
+    "datastore": "False",
+    "save_results": "False",
+}
 
 
 DD = dc.data.datasets.NumpyDataset
 
-#***********************************************************************************
+
+# ***********************************************************************************
 @pytest.mark.basic
 def test_create_model_wrapper():
     """
-        Args:
-        params (Namespace) : Parameters passed to the model pipeline
-                     featurizer (Featurization): Object managing the featurization of compounds
-                                 ds_client (DatastoreClient): Interface to the file datastore
+            Args:
+            params (Namespace) : Parameters passed to the model pipeline
+                         featurizer (Featurization): Object managing the featurization of compounds
+                                     ds_client (DatastoreClient): Interface to the file datastore
 
-                                                  Returns:
-                                                  model (pipeline.Model): Wrapper for DeepChem, sklearn or other model.
+                                                      Returns:
+                                                      model (pipeline.Model): Wrapper for DeepChem, sklearn or other model.
 
-                                                              Raises:
-ValueError: Only params.model_type = 'NN' or 'RF' is supported. 
+                                                                  Raises:
+    ValueError: Only params.model_type = 'NN' or 'RF' is supported.
 
-Dependencies:
-None
+    Dependencies:
+    None
 
-Calls:
-MultitaskDCModelWrapper, DCRFModelWrapper
+    Calls:
+    MultitaskDCModelWrapper, DCRFModelWrapper
     """
     inp_params = parse.wrapper(general_params)
+    inp_params.result_dir = tu.relative_to_file(__file__, input_params.result_dir)
     featurization = feat.create_featurization(inp_params)
     mdl = model_wrapper.create_model_wrapper(inp_params, featurization)
     mdl.setup_model_dirs()
-    
+
     # testing for correct attribute initialization with model_type == "NN"
     test = []
-    test.append(mdl.params.model_type == 'NN')
-    test.append(isinstance(mdl.featurization,feat.DynamicFeaturization))
+    test.append(mdl.params.model_type == "NN")
+    test.append(isinstance(mdl.featurization, feat.DynamicFeaturization))
     test.append(mdl.output_dir == inp_params.output_dir)
-    test.append(mdl.model_dir == inp_params.output_dir + '/' + 'model')
-    test.append(mdl.best_model_dir == inp_params.output_dir + '/' + 'best_model')
+    test.append(mdl.model_dir == inp_params.output_dir + "/" + "model")
+    test.append(mdl.best_model_dir == inp_params.output_dir + "/" + "best_model")
     test.append(mdl.transformers == [])
     test.append(mdl.transformers_x == [])
     test.append(isinstance(mdl, model_wrapper.MultitaskDCModelWrapper))
 
     # testing for correct attribute initialization with model_type == "RF"
     temp_params = copy.deepcopy(inp_params)
-    temp_params.model_type = 'RF'
+    temp_params.model_type = "RF"
     featurization = feat.create_featurization(temp_params)
     mdl_RF = model_wrapper.create_model_wrapper(temp_params, featurization)
     test.append(isinstance(mdl_RF, MP.model_wrapper.DCRFModelWrapper))
-    test.append(mdl_RF.params.model_type == 'RF')
+    test.append(mdl_RF.params.model_type == "RF")
 
     # assertion for all tests
     assert all(test)
 
-    #testing for Exception with model_type not in ['NN','RF']
+    # testing for Exception with model_type not in ['NN','RF']
     with pytest.raises(ValueError):
-        temp_params.model_type = 'wrong'
+        temp_params.model_type = "wrong"
         mdl_wrong = model_wrapper.create_model_wrapper(temp_params, featurization)
 
 
-#***********************************************************************************
+# ***********************************************************************************
 @pytest.mark.basic
 def test_super_create_transformers():
     """Args:
@@ -128,11 +127,14 @@ def test_super_create_transformers():
     dsf.upload_pickle_to_DS
 
     """
-    #set up for a model wrapper with regression and NN.
+    # set up for a model wrapper with regression and NN.
 
     inp_params = parse.wrapper(general_params)
+    inp_params.result_dir = tu.relative_to_file(__file__, inp_params.result_dir)
     featurization = feat.create_featurization(inp_params)
-    data_obj_ecfp = model_dataset.create_model_dataset(inp_params, featurization, ds_client = None)
+    data_obj_ecfp = model_dataset.create_model_dataset(
+        inp_params, featurization, ds_client=None
+    )
     df_delaney = data_obj_ecfp.load_full_dataset()
     data_obj_ecfp.get_dataset_tasks(df_delaney)
     model_dataset.check_task_columns(inp_params, df_delaney)
@@ -140,28 +142,30 @@ def test_super_create_transformers():
     mdl = model_wrapper.create_model_wrapper(inp_params, data_obj_ecfp.featurization)
     mdl.setup_model_dirs()
 
-    #testing correct model_wrapper build with regression and NN
+    # testing correct model_wrapper build with regression and NN
     test = []
-    test.append(mdl.params.prediction_type == 'regression')
-    test.append(mdl.params.model_type == 'NN')
+    test.append(mdl.params.prediction_type == "regression")
+    test.append(mdl.params.model_type == "NN")
     mdl.create_transformers(data_obj_ecfp)
-    test.append(isinstance(mdl.transformers[0], dc.trans.transformers.NormalizationTransformer))
+    test.append(
+        isinstance(mdl.transformers[0], dc.trans.transformers.NormalizationTransformer)
+    )
     test.append(mdl.transformers_x == [])
-    #testing saving of transformer to correct location:
-    transformer_path = os.path.join(mdl.output_dir, 'transformers.pkl')
+    # testing saving of transformer to correct location:
+    transformer_path = os.path.join(mdl.output_dir, "transformers.pkl")
     test.append(os.path.isfile(transformer_path))
 
     # TODO: test proper saving of the transformer to the datastore
 
     # TODO: test when transformers is False:
-    inp_params.prediction_type = 'classification'
+    inp_params.prediction_type = "classification"
     mdl = model_wrapper.create_model_wrapper(inp_params, featurization)
     test.append(mdl.transformers == [])
     test.append(mdl.transformers_x == [])
     assert all(test)
 
 
-#***********************************************************************************
+# ***********************************************************************************
 @pytest.mark.basic
 def test_super_transform_dataset():
     """Args:
@@ -180,10 +184,13 @@ def test_super_transform_dataset():
     None
 
     """
-    #set up for a model wrapper with regression and NN.
+    # set up for a model wrapper with regression and NN.
     inp_params = parse.wrapper(general_params)
+    inp_params = tu.relative_to_file(__file__, inp_params.result_dir)
     featurization = feat.create_featurization(inp_params)
-    data_obj_ecfp = model_dataset.create_model_dataset(inp_params, featurization, ds_client = None)
+    data_obj_ecfp = model_dataset.create_model_dataset(
+        inp_params, featurization, ds_client=None
+    )
     df_delaney = data_obj_ecfp.load_full_dataset()
     data_obj_ecfp.get_dataset_tasks(df_delaney)
     model_dataset.check_task_columns(inp_params, df_delaney)
@@ -204,15 +211,13 @@ def test_super_transform_dataset():
     assert all(test)
 
 
-
-
-#***********************************************************************************
-#def test_train_NN_graphconv_scaffold_defaults():
+# ***********************************************************************************
+# def test_train_NN_graphconv_scaffold_defaults():
 #    """
 #
 #    Args:
 #    pipeline (ModelPipeline): The ModelPipeline instance for this model run.
-#    
+#
 #    Dependencies:
 #    ModelPipeline creation
 #    featurization creation
@@ -225,7 +230,7 @@ def test_super_transform_dataset():
 #    perf_data.comput_perf_metrics
 #    data.combined_training-data()
 #    self._copy_model
-#    """    
+#    """
 #    # set up for the default graphconv model.
 #    general_params['featurizer'] = 'graphconv'
 #    inp_params = parse.wrapper(general_params)
@@ -244,7 +249,7 @@ def test_super_transform_dataset():
 #    test2.append(mp.model_wrapper.model.mode == 'regression')
 #    test2.append(mp.model_wrapper.model.dense_layer_size == 128)
 #    assert all(test2)
-#    
+#
 #    # calling dependencies for model_wrapper.train()
 #    mp.model_wrapper.setup_model_dirs()
 #    mp.load_featurize_data()
@@ -282,7 +287,8 @@ def test_super_transform_dataset():
 #    test4.append(isinstance(mp.model_wrapper.valid_perf_data[-1].pred_vals[0][0], np.float32))
 #    assert all(test4)
 
-#***********************************************************************************
+
+# ***********************************************************************************
 @pytest.mark.basic
 def test_train_NN_graphconv_scaffold_inputs():
     """Args:
@@ -302,29 +308,36 @@ def test_train_NN_graphconv_scaffold_inputs():
     self._copy_model
     """
     # checking that the layers, dropouts, and learning rate are properly added to the deepchem graphconv model
-    general_params['featurizer'] = 'graphconv'
-    general_params['layer_sizes'] = '100,100,10'
-    general_params['dropouts'] = '0.3,0.3,0.1'
-    general_params['uncertainty'] = False
+    general_params["featurizer"] = "graphconv"
+    general_params["layer_sizes"] = "100,100,10"
+    general_params["dropouts"] = "0.3,0.3,0.1"
+    general_params["uncertainty"] = False
     inp_params = parse.wrapper(general_params)
+    inp_params.result_dir = tu.relative_to_file(__file__, inp_params.result_dir)
     mp = MP.ModelPipeline(inp_params)
     mp.featurization = feat.create_featurization(inp_params)
-    mp.model_wrapper = model_wrapper.create_model_wrapper(inp_params, mp.featurization, mp.ds_client)
+    mp.model_wrapper = model_wrapper.create_model_wrapper(
+        inp_params, mp.featurization, mp.ds_client
+    )
     # asserting that the correct model is created with the correct layer sizes, dropouts, model_dir, and mode by default
     test1 = []
-    
+
     test1.append(mp.model_wrapper.params.layer_sizes == [100, 100, 10])
-    test1.append(mp.model_wrapper.params.dropouts == [0.3,0.3,0.1])
+    test1.append(mp.model_wrapper.params.dropouts == [0.3, 0.3, 0.1])
     # checking that parameters are properly passed to the deepchem model object
     test1.append(isinstance(mp.model_wrapper.model, GraphConvModel))
     test1.append(mp.model_wrapper.model.model_dir == mp.model_wrapper.model_dir)
-    test1.append([i.out_channel for i in mp.model_wrapper.model.model.graph_convs]== [100,100])
-    test1.append([i.rate for i in mp.model_wrapper.model.model.dropouts] == [0.3,0.3,0.1])
-    test1.append(mp.model_wrapper.model.mode == 'regression')
+    test1.append(
+        [i.out_channel for i in mp.model_wrapper.model.model.graph_convs] == [100, 100]
+    )
+    test1.append(
+        [i.rate for i in mp.model_wrapper.model.model.dropouts] == [0.3, 0.3, 0.1]
+    )
+    test1.append(mp.model_wrapper.model.mode == "regression")
     test1.append(mp.model_wrapper.model.model.dense.units == 10)
     assert all(test1)
-    
-    #***********************************************************************************
+
+    # ***********************************************************************************
     @pytest.mark.basic
     def test_super_get_train_valid_pred_results():
         """Args:
@@ -343,10 +356,11 @@ def test_train_NN_graphconv_scaffold_inputs():
 
         """
         pass
+
     # should be tested in perf_data.get_prediction_results()
     # should still be called to make sure that the function is callable
 
-    #***********************************************************************************
+    # ***********************************************************************************
     @pytest.mark.basic
     def test_super_get_test_perf_data():
         """Args:
@@ -371,7 +385,7 @@ def test_train_NN_graphconv_scaffold_inputs():
         pass
         # mostly tested in accumulate_preds, but should be tested to ensure taht the predictions are properly being called
 
-    #***********************************************************************************
+    # ***********************************************************************************
     @pytest.mark.basic
     def test_super_get_test_pred_results():
         """Args:
@@ -393,9 +407,9 @@ def test_train_NN_graphconv_scaffold_inputs():
         perf_data.get_prediction_results
         """
         pass
-        #mostly tested in perf_data.get_prediction_results
+        # mostly tested in perf_data.get_prediction_results
 
-    #***********************************************************************************
+    # ***********************************************************************************
     @pytest.mark.basic
     def test_super_get_full_dataset_perf_data():
         """Args:
@@ -417,7 +431,7 @@ def test_train_NN_graphconv_scaffold_inputs():
         """
         pass
 
-    #***********************************************************************************
+    # ***********************************************************************************
     @pytest.mark.basic
     def test_super_get_full_dataset_pred_results():
         """Args:
