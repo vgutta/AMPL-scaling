@@ -1,0 +1,120 @@
+[
+    {
+        "input_dataset": {
+            "bucket": "public",
+            "dataset_hash": "8db373b1278e4369a8ae37cfdd24a685",
+            "dataset_key": "/workspaces/AMPL/atomsci/ddm/test/integrative/delaney_RF/delaney-processed_curated_fit.csv",
+            "dataset_metadata": {},
+            "dataset_oid": null,
+            "datastore": false,
+            "external_export_parameters": {
+                "result_dir": "result"
+            },
+            "feature_transform_type": "normalization",
+            "id_col": "Compound ID",
+            "production": false,
+            "response_cols": [
+                "measured log solubility in mols per litre"
+            ],
+            "response_transform_type": "normalization",
+            "smiles_col": "smiles",
+            "weight_transform_type": null
+        },
+        "label": "best",
+        "metrics_type": "training",
+        "model_uuid": "70b0fe2d-311c-4a41-8e3c-4aea777adb21",
+        "prediction_results": {
+            "mae_score": 0.16848334668335405,
+            "mean_response_vals": [
+                -2.843088861076345
+            ],
+            "num_compounds": 799,
+            "r2_score": 0.985888330662336,
+            "rms_score": 0.243416179685474,
+            "std_response_vals": [
+                2.0490862839598702
+            ]
+        },
+        "subset": "train",
+        "time_run": 1721401752.6150463
+    },
+    {
+        "input_dataset": {
+            "bucket": "public",
+            "dataset_hash": "8db373b1278e4369a8ae37cfdd24a685",
+            "dataset_key": "/workspaces/AMPL/atomsci/ddm/test/integrative/delaney_RF/delaney-processed_curated_fit.csv",
+            "dataset_metadata": {},
+            "dataset_oid": null,
+            "datastore": false,
+            "external_export_parameters": {
+                "result_dir": "result"
+            },
+            "feature_transform_type": "normalization",
+            "id_col": "Compound ID",
+            "production": false,
+            "response_cols": [
+                "measured log solubility in mols per litre"
+            ],
+            "response_transform_type": "normalization",
+            "smiles_col": "smiles",
+            "weight_transform_type": null
+        },
+        "label": "best",
+        "metrics_type": "training",
+        "model_uuid": "70b0fe2d-311c-4a41-8e3c-4aea777adb21",
+        "prediction_results": {
+            "mae_score": 0.8335590399999995,
+            "mean_response_vals": [
+                -3.70732
+            ],
+            "model_choice_score": 0.7224334709548021,
+            "num_compounds": 100,
+            "r2_score": 0.7224334709548021,
+            "rms_score": 1.1190452211861674,
+            "std_response_vals": [
+                2.124046839784848
+            ]
+        },
+        "subset": "valid",
+        "time_run": 1721401752.6150472
+    },
+    {
+        "input_dataset": {
+            "bucket": "public",
+            "dataset_hash": "8db373b1278e4369a8ae37cfdd24a685",
+            "dataset_key": "/workspaces/AMPL/atomsci/ddm/test/integrative/delaney_RF/delaney-processed_curated_fit.csv",
+            "dataset_metadata": {},
+            "dataset_oid": null,
+            "datastore": false,
+            "external_export_parameters": {
+                "result_dir": "result"
+            },
+            "feature_transform_type": "normalization",
+            "id_col": "Compound ID",
+            "production": false,
+            "response_cols": [
+                "measured log solubility in mols per litre"
+            ],
+            "response_transform_type": "normalization",
+            "smiles_col": "smiles",
+            "weight_transform_type": null
+        },
+        "label": "best",
+        "metrics_type": "training",
+        "model_uuid": "70b0fe2d-311c-4a41-8e3c-4aea777adb21",
+        "prediction_results": {
+            "mae_score": 0.7699644399999996,
+            "mean_response_vals": [
+                -3.78652
+            ],
+            "num_compounds": 100,
+            "r2_score": 0.7064644128575853,
+            "rms_score": 1.0665429037721075,
+            "std_response_vals": [
+                1.9685567986725707
+            ]
+        },
+        "subset": "test",
+        "time_run": 1721401752.6150477
+    }
+]
